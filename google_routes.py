@@ -251,16 +251,26 @@ def checkin_with_google():
 @google_bp.route('/imgbb/status')
 def imgbb_status():
     """檢查 ImgBB API Key 狀態"""
+    import os
+    # 直接從環境變數讀取，不依賴模組常數
+    key_from_env = os.environ.get('IMGBB_API_KEY', '')
+    
     return jsonify({
-        'configured': bool(IMGBB_API_KEY),
-        'key_preview': IMGBB_API_KEY[:8] + '...' if IMGBB_API_KEY else None
+        'configured': bool(key_from_env),
+        'key_preview': key_from_env[:8] + '...' if key_from_env and len(key_from_env) > 8 else ('(太短)' if key_from_env else None),
+        'key_length': len(key_from_env) if key_from_env else 0,
+        'from_module': bool(IMGBB_API_KEY),
+        'module_preview': IMGBB_API_KEY[:8] + '...' if IMGBB_API_KEY and len(IMGBB_API_KEY) > 8 else None
     })
 
 
 @google_bp.route('/imgbb/test', methods=['POST'])
 def imgbb_test():
     """測試 ImgBB 上傳"""
-    if not IMGBB_API_KEY:
+    import os
+    api_key = os.environ.get('IMGBB_API_KEY', '') or IMGBB_API_KEY
+    
+    if not api_key:
         return jsonify({'success': False, 'error': 'IMGBB_API_KEY 未設定'})
     
     # 建立一個簡單的測試圖片（1x1 紅色像素）

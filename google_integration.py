@@ -93,7 +93,10 @@ def upload_to_imgbb(image_data, filename=None):
             'delete_url': 刪除用 URL
         }
     """
-    if not IMGBB_API_KEY:
+    # 動態讀取環境變數（避免模組載入時還沒注入）
+    api_key = os.environ.get('IMGBB_API_KEY', '') or IMGBB_API_KEY
+    
+    if not api_key:
         return {'success': False, 'error': 'ImgBB API Key 未設定'}
     
     try:
@@ -104,7 +107,7 @@ def upload_to_imgbb(image_data, filename=None):
         response = requests.post(
             'https://api.imgbb.com/1/upload',
             data={
-                'key': IMGBB_API_KEY,
+                'key': api_key,
                 'image': image_base64,
                 'name': filename or 'travel_photo'
             }

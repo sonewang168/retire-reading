@@ -603,8 +603,10 @@
                 const statusText = document.getElementById('imgbb-status-text');
                 const featureCard = document.getElementById('feature-imgbb');
                 
-                if (data.configured) {
-                    statusText.textContent = '✅ 已設定';
+                console.log('ImgBB 狀態:', data);  // 除錯用
+                
+                if (data.configured || data.from_module) {
+                    statusText.textContent = '✅ 已設定 (長度: ' + data.key_length + ')';
                     statusText.style.color = '#00d4aa';
                     featureCard.classList.remove('disabled');
                 } else {
