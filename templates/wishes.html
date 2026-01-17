@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>願望清單 | 退休走讀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #00d4aa; --accent-glow: rgba(0,212,170,0.5);
+            --bg: #0a0f0d; --bg-card: #141a17; --text: #e8efe9; --text-muted: #7a8a7e;
+            --border: #2a3a2f; --glass: rgba(26,95,42,0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .logo-3d-container { perspective: 1000px; width: 50px; height: 50px; }
+        .logo-3d { width: 100%; height: 100%; transform-style: preserve-3d; animation: r 8s ease-in-out infinite; }
+        .logo-3d-text { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, #00ffcc, #00d4aa); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 10px var(--accent)); }
+        @keyframes r { 0%,100%{transform:rotateY(0)} 25%{transform:rotateY(15deg)} 75%{transform:rotateY(-15deg)} }
+        nav { background: rgba(10,15,13,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+        .logo-text { font-size: 1.3rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), #00ff99); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .nav-links { display: flex; gap: 0.5rem; list-style: none; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; transition: all 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); background: var(--glass); }
+        main { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .page-title { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .add-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--accent); color: #0a0f0d; border-radius: 12px; font-weight: 600; text-decoration: none; transition: all 0.3s; }
+        .add-btn:hover { box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-2px); }
+        .filters { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .filter-btn { padding: 0.5rem 1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: all 0.3s; }
+        .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .filter-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+        .wish-list { display: flex; flex-direction: column; gap: 1rem; }
+        .wish-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: center; transition: all 0.3s; }
+        .wish-card:hover { border-color: var(--accent); transform: translateX(4px); }
+        .wish-card.completed { opacity: 0.6; }
+        .wish-checkbox { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; font-size: 1.2rem; color: transparent; }
+        .wish-checkbox:hover { border-color: var(--accent); background: var(--glass); }
+        .wish-card.completed .wish-checkbox { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+        .wish-name { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        .priority-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .p1{background:#ef4444} .p2{background:#f97316} .p3{background:#eab308} .p4{background:#22c55e} .p5{background:#6b7280}
+        .wish-meta { display: flex; gap: 1.5rem; color: var(--text-muted); font-size: 0.9rem; flex-wrap: wrap; }
+        .wish-actions { display: flex; gap: 0.5rem; }
+        .action-icon { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none; transition: all 0.3s; }
+        .action-icon:hover { border-color: var(--accent); background: var(--glass); }
+        .empty-state { text-align: center; padding: 4rem 2rem; background: var(--bg-card); border-radius: 24px; border: 2px dashed var(--border); }
+        .empty-state .icon { font-size: 4rem; opacity: 0.3; margin-bottom: 1rem; }
+        .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--accent); color: var(--bg); padding: 1rem 1.5rem; border-radius: 12px; display: none; font-weight: 600; }
+        @media (max-width: 768px) { .wish-card { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/?user={{ user_id }}" class="logo">
+                <div class="logo-3d-container"><div class="logo-3d"><div class="logo-3d-text">讀</div></div></div>
+                <span class="logo-text">退休走讀</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/?user={{ user_id }}">首頁</a></li>
+                <li><a href="/wishes?user={{ user_id }}" class="active">願望</a></li>
+                <li><a href="/routes?user={{ user_id }}">路線</a></li>
+                <li><a href="/atlas?user={{ user_id }}">圖鑑</a></li>
+                <li><a href="/achievements?user={{ user_id }}">成就</a></li>
+                <li><a href="/logs?user={{ user_id }}">紀錄</a></li>
+            </ul>
+        </div>
+    </nav>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">📋 我的願望清單</h1>
+            <a href="/wishes/add?user={{ user_id }}" class="add-btn">✨ 新增願望</a>
+        </div>
+        <div class="filters">
+            <a href="/wishes?status=all&region={{ filter_region }}&user={{ user_id }}" class="filter-btn {{ 'active' if filter_status == 'all' }}">全部</a>
+            <a href="/wishes?status=pending&region={{ filter_region }}&user={{ user_id }}" class="filter-btn {{ 'active' if filter_status == 'pending' }}">待完成</a>
+            <a href="/wishes?status=done&region={{ filter_region }}&user={{ user_id }}" class="filter-btn {{ 'active' if filter_status == 'done' }}">已完成</a>
+        </div>
+        {% if wishes %}
+        <div class="wish-list">
+            {% for wish in wishes %}
+            <div class="wish-card {{ 'completed' if wish.completed }}" data-id="{{ wish.id }}">
+                <div class="wish-checkbox" onclick="toggleComplete({{ wish.id }}, {{ wish.completed }})">{% if wish.completed %}✓{% endif %}</div>
+                <div class="wish-content">
+                    <div class="wish-name">
+                        <span class="priority-dot p{{ wish.priority }}"></span>
+                        {{ wish.name }}
+                    </div>
+                    <div class="wish-meta">
+                        {% if wish.region %}<span>📍 {{ wish.region }}</span>{% endif %}
+                        {% if wish.best_season %}<span>🌸 {{ wish.best_season }}</span>{% endif %}
+                        {% if wish.budget > 0 %}<span>💰 NT${{ "{:,}".format(wish.budget) }}</span>{% endif %}
+                        {% if wish.completed_date %}<span>✅ {{ wish.completed_date }}</span>{% endif %}
+                    </div>
+                </div>
+                <div class="wish-actions">
+                    <a href="/wishes/{{ wish.id }}/edit?user={{ user_id }}" class="action-icon">✏️</a>
+                    <button class="action-icon" onclick="deleteWish({{ wish.id }})">🗑️</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">🌟</div>
+            <h3>還沒有任何願望</h3>
+            <p style="color:var(--text-muted);margin-bottom:1.5rem">開始規劃你的退休旅遊清單吧！</p>
+            <a href="/wishes/add?user={{ user_id }}" class="add-btn">✨ 新增第一個願望</a>
+        </div>
+        {% endif %}
+    </main>
+    <div class="toast" id="toast"></div>
+    <script>
+        const userId = '{{ user_id }}';
+        function toggleComplete(id, done) {
+            if (done) return;
+            fetch(`/wishes/${id}/complete`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({user_id: userId}) })
+                .then(r => r.json()).then(d => { if(d.success) { showToast('🎉 恭喜完成！'); setTimeout(() => location.reload(), 1000); } });
+        }
+        function deleteWish(id) {
+            if (!confirm('確定刪除？')) return;
+            fetch(`/wishes/${id}/delete`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({user_id: userId}) })
+                .then(r => r.json()).then(d => { if(d.success) document.querySelector(`[data-id="${id}"]`).remove(); });
+        }
+        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); }
+    </script>
+</body>
+</html>

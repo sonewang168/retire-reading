@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅遊紀錄 | 退休慢遊</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5f2a;
+            --primary-light: #2d8a3e;
+            --accent: #E8985E;
+            --bg: #0a0f0d;
+            --card: #141a17;
+            --text: #e8efe9;
+            --text-light: #7a8a7e;
+            --border: #2a3a2f;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        nav {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .add-btn:hover {
+            background: var(--primary-light);
+        }
+        
+        /* 時間軸 */
+        .timeline {
+            position: relative;
+        }
+        
+        .year-group {
+            margin-bottom: 3rem;
+        }
+        
+        .year-label {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-left: 1rem;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .log-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 2rem;
+        }
+        
+        .log-date {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 12px;
+            min-width: 80px;
+        }
+        
+        .log-day {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+        
+        .log-month {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+        
+        .log-content {
+            flex: 1;
+        }
+        
+        .log-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .log-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+        
+        .log-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .rating {
+            color: #FFB800;
+        }
+        
+        .log-diary {
+            background: var(--bg);
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            line-height: 1.7;
+            color: var(--text);
+            font-size: 0.95rem;
+            border-left: 3px solid var(--accent);
+        }
+        
+        /* 空狀態 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--card);
+            border-radius: 20px;
+            border: 2px dashed var(--border);
+        }
+        
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .log-card {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .log-date {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                justify-content: flex-start;
+            }
+            
+            .log-day, .log-month {
+                display: inline;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">退休走讀</a>
+            <ul class="nav-links">
+                <li><a href="/">首頁</a></li>
+                <li><a href="/wishes">願望清單</a></li>
+                <li><a href="/routes">走讀路線</a></li>
+                <li><a href="/logs" class="active">旅遊紀錄</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">📖 我的旅遊紀錄</h1>
+            <a href="/logs/add" class="add-btn">
+                <span>📝</span>
+                <span>寫新紀錄</span>
+            </a>
+        </div>
+        
+        {% if logs %}
+        <div class="timeline">
+            {% set current_year = namespace(value='') %}
+            {% for log in logs %}
+                {% set log_year = log.travel_date[:4] if log.travel_date else '' %}
+                {% if log_year != current_year.value %}
+                    {% set current_year.value = log_year %}
+                    <div class="year-group">
+                        <h2 class="year-label">{{ log_year }} 年</h2>
+                {% endif %}
+                
+                <div class="log-card">
+                    <div class="log-date">
+                        <div class="log-day">{{ log.travel_date[8:10] if log.travel_date else '--' }}</div>
+                        <div class="log-month">{{ log.travel_date[5:7] if log.travel_date else '--' }} 月</div>
+                    </div>
+                    
+                    <div class="log-content">
+                        <h3 class="log-title">
+                            {% if log.wish_name %}
+                            {{ log.wish_name }}
+                            {% elif log.route_name %}
+                            {{ log.route_name }}
+                            {% else %}
+                            旅遊紀錄
+                            {% endif %}
+                        </h3>
+                        
+                        <div class="log-meta">
+                            {% if log.route_name %}
+                            <span>🚶 {{ log.route_name }}</span>
+                            {% endif %}
+                            {% if log.actual_budget > 0 %}
+                            <span>💰 NT${{ "{:,}".format(log.actual_budget) }}</span>
+                            {% endif %}
+                            <span class="rating">
+                                {% for i in range(log.rating) %}⭐{% endfor %}
+                            </span>
+                        </div>
+                        
+                        {% if log.diary %}
+                        <div class="log-diary">{{ log.diary }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if loop.last or (logs[loop.index].travel_date[:4] if loop.index < logs|length else '') != current_year.value %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📷</div>
+            <h3>還沒有任何旅遊紀錄</h3>
+            <p>每一段旅程都值得被記住</p>
+            <a href="/logs/add" class="add-btn">📝 記錄第一趟旅程</a>
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>

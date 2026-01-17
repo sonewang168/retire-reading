@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>退休走讀 | 探索台灣之美</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5f2a;
+            --primary-light: #2d8a3e;
+            --accent: #00d4aa;
+            --accent-glow: rgba(0, 212, 170, 0.5);
+            --bg: #0a0f0d;
+            --bg-card: #141a17;
+            --bg-card-hover: #1c2420;
+            --text: #e8efe9;
+            --text-muted: #7a8a7e;
+            --border: #2a3a2f;
+            --glass: rgba(26, 95, 42, 0.1);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* 3D 旋轉 Logo */
+        .logo-3d-container {
+            perspective: 1000px;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .logo-3d {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: logoRotate 8s ease-in-out infinite;
+        }
+        
+        .logo-3d-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 900;
+            color: transparent;
+            background: linear-gradient(135deg, #00ffcc, #00d4aa, #00ff99);
+            -webkit-background-clip: text;
+            background-clip: text;
+            text-shadow: 
+                0 0 20px var(--accent-glow),
+                0 0 40px var(--accent-glow),
+                0 0 60px var(--accent-glow);
+            filter: drop-shadow(0 0 10px var(--accent));
+        }
+        
+        .logo-3d::before {
+            content: '';
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            animation: pulse 2s ease-in-out infinite;
+            z-index: -1;
+        }
+        
+        @keyframes logoRotate {
+            0%, 100% { transform: rotateY(0deg) rotateX(0deg); }
+            25% { transform: rotateY(15deg) rotateX(5deg); }
+            50% { transform: rotateY(0deg) rotateX(-5deg); }
+            75% { transform: rotateY(-15deg) rotateX(5deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+        
+        /* 導覽列 */
+        nav {
+            background: rgba(10, 15, 13, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #00ff99);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent);
+            background: var(--glass);
+        }
+        
+        /* 主內容 */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(26, 95, 42, 0.2) 100%);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 200%;
+            background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0.3;
+            animation: heroGlow 6s ease-in-out infinite;
+        }
+        
+        @keyframes heroGlow {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+            50% { transform: translateY(-10%) scale(1.1); opacity: 0.5; }
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+        
+        /* 統計卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+        
+        /* 進度環 */
+        .progress-ring-container {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--glass);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+        
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 8;
+        }
+        
+        .progress-ring .bg {
+            stroke: var(--border);
+        }
+        
+        .progress-ring .progress {
+            stroke: var(--accent);
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 6px var(--accent));
+            transition: stroke-dashoffset 1s ease-out;
+        }
+        
+        .progress-ring .value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--accent);
+        }
+        
+        .progress-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-info p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        /* 區塊標題 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 3rem 0 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .view-all {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.3s;
+        }
+        
+        .view-all:hover {
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+        
+        /* 路線卡片 */
+        .route-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .route-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .route-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0, 212, 170, 0.2);
+        }
+        
+        .route-card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .route-card-header::before {
+            content: attr(data-emoji);
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 4rem;
+            opacity: 0.2;
+        }
+        
+        .route-region {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .route-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .route-card-body {
+            padding: 1.5rem;
+        }
+        
+        .route-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .route-stat {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .route-accessibility {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent);
+            font-size: 0.85rem;
+        }
+        
+        .route-progress {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .route-progress-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .route-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #00ff99);
+            border-radius: 3px;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+        
+        /* 最近打卡 */
+        .checkin-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .checkin-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+        
+        .checkin-item:hover {
+            border-color: var(--accent);
+            transform: translateX(4px);
+        }
+        
+        .checkin-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--glass);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .checkin-info h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .checkin-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        /* 快速操作 */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--accent);
+            background: var(--glass);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.15);
+        }
+        
+        .action-btn .icon {
+            font-size: 2rem;
+        }
+        
+        /* LINE 提示 */
+        .line-tip {
+            background: linear-gradient(135deg, #00B900, #00C300);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .line-tip .icon {
+            font-size: 3rem;
+        }
+        
+        .line-tip h3 {
+            margin-bottom: 0.25rem;
+        }
+        
+        .line-tip p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        /* 空狀態 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state .icon {
+            font-size: 4rem;
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+        
+        /* RWD */
+        @media (max-width: 900px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .progress-ring-container {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            nav { padding: 0.75rem 1rem; }
+            
+            .nav-links a {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
+            
+            main { padding: 1rem; }
+            
+            .hero { padding: 2rem 1.5rem; border-radius: 24px; }
+            
+            .hero h1 { font-size: 1.75rem; }
+            
+            .logo-3d-container { width: 50px; height: 50px; }
+            .logo-3d-text { font-size: 2rem; }
+            .logo-text { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/?user={{ user_id }}" class="logo">
+                <div class="logo-3d-container">
+                    <div class="logo-3d">
+                        <div class="logo-3d-text">讀</div>
+                    </div>
+                </div>
+                <span class="logo-text">退休走讀</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/?user={{ user_id }}" class="active">首頁</a></li>
+                <li><a href="/wishes?user={{ user_id }}">願望</a></li>
+                <li><a href="/routes?user={{ user_id }}">路線</a></li>
+                <li><a href="/atlas?user={{ user_id }}">圖鑑</a></li>
+                <li><a href="/achievements?user={{ user_id }}">成就</a></li>
+                <li><a href="/logs?user={{ user_id }}">紀錄</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>探索台灣之美</h1>
+                <p>慢慢走，好好讀，退休生活從這裡開始</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-value">{{ wishes_total }}</div>
+                        <div class="stat-label">願望清單</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🗺️</div>
+                        <div class="stat-value">{{ checkin_count }}/{{ spots_total }}</div>
+                        <div class="stat-label">圖鑑收集</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-value">{{ achievement_count }}</div>
+                        <div class="stat-label">成就徽章</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value">{{ wishes_done }}</div>
+                        <div class="stat-label">已完成</div>
+                    </div>
+                </div>
+                
+                {% if spots_total > 0 %}
+                <div class="progress-ring-container">
+                    <div class="progress-ring">
+                        <svg width="120" height="120">
+                            <circle class="bg" cx="60" cy="60" r="52"></circle>
+                            <circle class="progress" cx="60" cy="60" r="52" 
+                                    stroke-dasharray="326.73" 
+                                    stroke-dashoffset="{{ 326.73 - (checkin_count / spots_total * 326.73) }}"></circle>
+                        </svg>
+                        <div class="value">{{ ((checkin_count / spots_total) * 100)|round|int }}%</div>
+                    </div>
+                    <div class="progress-info">
+                        <h3>圖鑑收集進度</h3>
+                        <p>已收集 {{ checkin_count }} / {{ spots_total }} 個景點<br>
+                        繼續探索，收集更多美好回憶！</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        
+        <section class="quick-actions">
+            <a href="/wishes/add?user={{ user_id }}" class="action-btn">
+                <span class="icon">✨</span>
+                <span>新增願望</span>
+            </a>
+            <a href="/routes?user={{ user_id }}" class="action-btn">
+                <span class="icon">🚶</span>
+                <span>探索路線</span>
+            </a>
+            <a href="/atlas?user={{ user_id }}" class="action-btn">
+                <span class="icon">🗺️</span>
+                <span>探險圖鑑</span>
+            </a>
+            <a href="/achievements?user={{ user_id }}" class="action-btn">
+                <span class="icon">🏆</span>
+                <span>成就徽章</span>
+            </a>
+            <a href="/logs/add?user={{ user_id }}" class="action-btn">
+                <span class="icon">📝</span>
+                <span>寫日記</span>
+            </a>
+        </section>
+        
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>🌿</span>
+                <span>{{ current_season }}季推薦路線</span>
+            </h2>
+            <a href="/routes?user={{ user_id }}" class="view-all">查看全部 →</a>
+        </div>
+        
+        <div class="route-grid">
+            {% for route in seasonal_routes %}
+            <a href="/routes/{{ route.id }}?user={{ user_id }}" class="route-card">
+                <div class="route-card-header" data-emoji="{{ route.cover_emoji }}">
+                    <span class="route-region">{{ route.region }}</span>
+                    <div class="route-name">{{ route.name }}</div>
+                </div>
+                <div class="route-card-body">
+                    <div class="route-stats">
+                        <span class="route-stat">📏 {{ route.distance_km }} km</span>
+                        <span class="route-stat">⏱️ {{ route.duration_hours }} h</span>
+                        <span class="route-stat">{{ route.difficulty }}</span>
+                    </div>
+                    <div class="route-accessibility">
+                        {% for i in range(route.accessibility) %}♿{% endfor %}
+                        無障礙友善
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        
+        {% if recent_checkins %}
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>📍</span>
+                <span>最近打卡</span>
+            </h2>
+            <a href="/atlas?user={{ user_id }}" class="view-all">查看圖鑑 →</a>
+        </div>
+        
+        <div class="checkin-list">
+            {% for c in recent_checkins %}
+            <div class="checkin-item">
+                <div class="checkin-icon">{{ c.icon }}</div>
+                <div class="checkin-info">
+                    <h4>{{ c.spot_name }}</h4>
+                    <p>{{ c.route_name }} · {{ c.checkin_date }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="line-tip">
+            <div class="icon">💬</div>
+            <div>
+                <h3>用 LINE 也能操作！</h3>
+                <p>加入 LINE Bot，輸入「願望」「路線」「圖鑑」「成就」隨時管理你的退休走讀</p>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ '編輯' if wish else '新增' }}願望 | 退休慢遊</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5f2a;
+            --primary-light: #2d8a3e;
+            --accent: #E8985E;
+            --bg: #0a0f0d;
+            --card: #141a17;
+            --text: #e8efe9;
+            --text-light: #7a8a7e;
+            --border: #2a3a2f;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        nav {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .form-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .form-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .priority-selector {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .priority-option {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .priority-option:hover {
+            border-color: var(--primary);
+        }
+        
+        .priority-option.selected {
+            border-color: var(--primary);
+            background: rgba(45, 90, 39, 0.1);
+        }
+        
+        .priority-option input {
+            display: none;
+        }
+        
+        .priority-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.25rem;
+        }
+        
+        .p1 { background: #C75050; }
+        .p2 { background: #E8985E; }
+        .p3 { background: #E8D85E; }
+        .p4 { background: #7BC76A; }
+        .p5 { background: #CCCCCC; }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        .hint {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .priority-selector {
+                flex-wrap: wrap;
+            }
+            
+            .priority-option {
+                flex: 0 0 calc(50% - 0.25rem);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">退休走讀</a>
+            <ul class="nav-links">
+                <li><a href="/">首頁</a></li>
+                <li><a href="/wishes" class="active">願望清單</a></li>
+                <li><a href="/routes">走讀路線</a></li>
+                <li><a href="/logs">旅遊紀錄</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <div class="form-card">
+            <h1 class="form-title">{{ '✏️ 編輯願望' if wish else '✨ 新增願望' }}</h1>
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label for="name">想去的地方 *</label>
+                    <input type="text" id="name" name="name" required 
+                           value="{{ wish.name if wish else '' }}" 
+                           placeholder="例如：阿里山、九份、花東縱谷...">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="region">地區</label>
+                        <select id="region" name="region">
+                            <option value="">選擇地區</option>
+                            <option value="北部" {{ 'selected' if wish and wish.region == '北部' }}>北部</option>
+                            <option value="中部" {{ 'selected' if wish and wish.region == '中部' }}>中部</option>
+                            <option value="南部" {{ 'selected' if wish and wish.region == '南部' }}>南部</option>
+                            <option value="東部" {{ 'selected' if wish and wish.region == '東部' }}>東部</option>
+                            <option value="離島" {{ 'selected' if wish and wish.region == '離島' }}>離島</option>
+                            <option value="海外" {{ 'selected' if wish and wish.region == '海外' }}>海外</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="best_season">最佳季節</label>
+                        <select id="best_season" name="best_season">
+                            <option value="">選擇季節</option>
+                            <option value="春" {{ 'selected' if wish and wish.best_season == '春' }}>春季 (3-5月)</option>
+                            <option value="夏" {{ 'selected' if wish and wish.best_season == '夏' }}>夏季 (6-8月)</option>
+                            <option value="秋" {{ 'selected' if wish and wish.best_season == '秋' }}>秋季 (9-11月)</option>
+                            <option value="冬" {{ 'selected' if wish and wish.best_season == '冬' }}>冬季 (12-2月)</option>
+                            <option value="四季皆宜" {{ 'selected' if wish and wish.best_season == '四季皆宜' }}>四季皆宜</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">描述</label>
+                    <textarea id="description" name="description" 
+                              placeholder="為什麼想去這裡？有什麼期待？">{{ wish.description if wish else '' }}</textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="budget">預算 (NT$)</label>
+                        <input type="number" id="budget" name="budget" min="0" step="100"
+                               value="{{ wish.budget if wish and wish.budget else '' }}" 
+                               placeholder="預估花費">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>優先度</label>
+                        <div class="priority-selector">
+                            {% for i in range(1, 6) %}
+                            <label class="priority-option {{ 'selected' if (wish and wish.priority == i) or (not wish and i == 3) }}">
+                                <input type="radio" name="priority" value="{{ i }}" 
+                                       {{ 'checked' if (wish and wish.priority == i) or (not wish and i == 3) }}>
+                                <span class="priority-dot p{{ i }}"></span>
+                                {{ ['最高', '高', '中', '低', '最低'][i-1] }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">備註</label>
+                    <textarea id="notes" name="notes" rows="3"
+                              placeholder="交通方式、住宿資訊、注意事項...">{{ wish.notes if wish else '' }}</textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="/wishes" class="btn btn-secondary">取消</a>
+                    <button type="submit" class="btn btn-primary">
+                        {{ '更新' if wish else '新增' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <script>
+        // 優先度選擇器互動
+        document.querySelectorAll('.priority-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.priority-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>

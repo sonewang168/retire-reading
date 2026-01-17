@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ route.name }} | 退休慢遊</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5f2a;
+            --primary-light: #2d8a3e;
+            --accent: #E8985E;
+            --bg: #0a0f0d;
+            --card: #141a17;
+            --text: #e8efe9;
+            --text-light: #7a8a7e;
+            --border: #2a3a2f;
+            --success: #2d8a3e;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        nav {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Hero */
+        .route-hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 4rem 2rem;
+            position: relative;
+        }
+        
+        .route-hero::before {
+            content: '🚶';
+            position: absolute;
+            right: 10%;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10rem;
+            opacity: 0.1;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .back-link:hover {
+            color: white;
+        }
+        
+        .route-region-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.25rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .route-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .route-description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        /* 主內容 */
+        main {
+            max-width: 1000px;
+            margin: -3rem auto 2rem;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .info-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+        
+        /* 設施資訊 */
+        .section {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .accessibility-detail {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(74, 124, 67, 0.1);
+            border-radius: 12px;
+        }
+        
+        .accessibility-icons {
+            font-size: 1.5rem;
+            color: var(--success);
+        }
+        
+        .accessibility-text h4 {
+            color: var(--success);
+            margin-bottom: 0.25rem;
+        }
+        
+        .accessibility-text p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        /* 景點時間軸 */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        
+        .spot {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        
+        .spot:last-child {
+            padding-bottom: 0;
+        }
+        
+        .spot::before {
+            content: '';
+            position: absolute;
+            left: -1.65rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 3px solid var(--bg);
+        }
+        
+        .spot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        
+        .spot-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .spot-type {
+            background: var(--bg);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+        
+        .spot-description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .spot-facilities {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .facility {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+        
+        .facility.available {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        .facility.unavailable {
+            background: #F5F5F5;
+            color: #9E9E9E;
+            text-decoration: line-through;
+        }
+        
+        /* 亮點 */
+        .highlights-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        
+        .highlight-tag {
+            background: linear-gradient(135deg, var(--accent) 0%, #D4845A 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        /* 行動按鈕 */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg);
+        }
+        
+        @media (max-width: 768px) {
+            .info-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .route-title {
+                font-size: 1.75rem;
+            }
+            
+            .route-hero::before {
+                display: none;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">退休走讀</a>
+            <ul class="nav-links">
+                <li><a href="/">首頁</a></li>
+                <li><a href="/wishes">願望清單</a></li>
+                <li><a href="/routes" class="active">走讀路線</a></li>
+                <li><a href="/logs">旅遊紀錄</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="route-hero">
+        <div class="hero-content">
+            <a href="/routes" class="back-link">← 返回路線列表</a>
+            <span class="route-region-badge">{{ route.region }}</span>
+            <h1 class="route-title">{{ route.name }}</h1>
+            <p class="route-description">{{ route.description }}</p>
+        </div>
+    </div>
+    
+    <main>
+        <!-- 基本資訊卡片 -->
+        <div class="info-cards">
+            <div class="info-card">
+                <div class="info-icon">📏</div>
+                <div class="info-value">{{ route.distance_km }} km</div>
+                <div class="info-label">全程距離</div>
+            </div>
+            <div class="info-card">
+                <div class="info-icon">⏱️</div>
+                <div class="info-value">{{ route.duration_hours }} h</div>
+                <div class="info-label">建議時間</div>
+            </div>
+            <div class="info-card">
+                <div class="info-icon">🎯</div>
+                <div class="info-value">{{ route.difficulty }}</div>
+                <div class="info-label">難度</div>
+            </div>
+            <div class="info-card">
+                <div class="info-icon">🌸</div>
+                <div class="info-value">{{ route.best_season }}</div>
+                <div class="info-label">最佳季節</div>
+            </div>
+        </div>
+        
+        <!-- 無障礙資訊 -->
+        <div class="section">
+            <h2 class="section-title">♿ 無障礙程度</h2>
+            <div class="accessibility-detail">
+                <div class="accessibility-icons">
+                    {% for i in range(route.accessibility) %}♿{% endfor %}
+                </div>
+                <div class="accessibility-text">
+                    <h4>
+                        {% if route.accessibility >= 5 %}全程無障礙
+                        {% elif route.accessibility >= 4 %}大部分無障礙
+                        {% elif route.accessibility >= 3 %}部分無障礙
+                        {% elif route.accessibility >= 2 %}少數無障礙
+                        {% else %}需要一定步行能力{% endif %}
+                    </h4>
+                    <p>
+                        {% if route.accessibility >= 4 %}
+                        此路線適合輪椅、嬰兒車，沿途有完善的無障礙設施
+                        {% elif route.accessibility >= 3 %}
+                        主要景點可無障礙通行，部分路段可能需要協助
+                        {% else %}
+                        建議有一定行走能力再前往，部分路段可能較為崎嶇
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 路線亮點 -->
+        {% if route.highlights %}
+        <div class="section">
+            <h2 class="section-title">✨ 路線亮點</h2>
+            <div class="highlights-list">
+                {% for highlight in route.highlights.split('、') %}
+                <span class="highlight-tag">{{ highlight }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- 景點詳情 -->
+        {% if spots %}
+        <div class="section">
+            <h2 class="section-title">📍 沿途景點與設施</h2>
+            <div class="timeline">
+                {% for spot in spots %}
+                <div class="spot">
+                    <div class="spot-header">
+                        <span class="spot-name">{{ spot.name }}</span>
+                        <span class="spot-type">{{ spot.spot_type }}</span>
+                    </div>
+                    {% if spot.description %}
+                    <p class="spot-description">{{ spot.description }}</p>
+                    {% endif %}
+                    <div class="spot-facilities">
+                        <span class="facility {{ 'available' if spot.has_restroom else 'unavailable' }}">
+                            🚻 廁所
+                        </span>
+                        <span class="facility {{ 'available' if spot.has_rest_area else 'unavailable' }}">
+                            🪑 休息區
+                        </span>
+                        <span class="facility {{ 'available' if spot.has_parking else 'unavailable' }}">
+                            🅿️ 停車場
+                        </span>
+                        <span class="facility {{ 'available' if spot.wheelchair_accessible else 'unavailable' }}">
+                            ♿ 無障礙
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- 行動按鈕 -->
+        <div class="actions">
+            <a href="/wishes/add?name={{ route.name }}" class="btn btn-primary">
+                ✨ 加入願望清單
+            </a>
+            <a href="/logs/add?route_id={{ route.id }}" class="btn btn-secondary">
+                📝 記錄這趟旅程
+            </a>
+        </div>
+    </main>
+</body>
+</html>

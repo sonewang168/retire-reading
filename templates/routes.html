@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>走讀路線 | 退休慢遊</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5f2a;
+            --primary-light: #2d8a3e;
+            --accent: #E8985E;
+            --bg: #0a0f0d;
+            --card: #141a17;
+            --text: #e8efe9;
+            --text-light: #7a8a7e;
+            --border: #2a3a2f;
+            --success: #2d8a3e;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        nav {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--text-light);
+        }
+        
+        /* 篩選器 */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--primary);
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* 路線卡片網格 */
+        .route-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .route-card {
+            background: var(--card);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .route-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+        }
+        
+        .route-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+        }
+        
+        .route-region {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .route-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .route-description {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        .route-body {
+            padding: 1.5rem;
+        }
+        
+        .route-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+        
+        .route-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tag {
+            background: var(--bg);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        
+        .accessibility-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(74, 124, 67, 0.1);
+            border-radius: 8px;
+        }
+        
+        .accessibility-icons {
+            color: var(--success);
+            font-size: 1.1rem;
+        }
+        
+        .accessibility-text {
+            font-size: 0.85rem;
+            color: var(--success);
+        }
+        
+        .highlights {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .highlights-title {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .highlights-text {
+            font-size: 0.9rem;
+            color: var(--text);
+            line-height: 1.5;
+        }
+        
+        /* 難度標籤 */
+        .difficulty {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .difficulty-輕鬆 { background: #C8E6C9; color: #2E7D32; }
+        .difficulty-中等 { background: #FFE0B2; color: #E65100; }
+        .difficulty-挑戰 { background: #FFCDD2; color: #C62828; }
+        
+        /* 圖例 */
+        .legend {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .legend-items {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .route-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .route-stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">退休走讀</a>
+            <ul class="nav-links">
+                <li><a href="/">首頁</a></li>
+                <li><a href="/wishes">願望清單</a></li>
+                <li><a href="/routes" class="active">走讀路線</a></li>
+                <li><a href="/logs">旅遊紀錄</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">🚶 台灣走讀路線</h1>
+            <p class="page-subtitle">精選適合退休慢遊的輕旅行路線，含無障礙設施資訊</p>
+        </div>
+        
+        <!-- 圖例 -->
+        <div class="legend">
+            <div class="legend-title">無障礙程度說明</div>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span>♿♿♿♿♿</span>
+                    <span>全程無障礙</span>
+                </div>
+                <div class="legend-item">
+                    <span>♿♿♿♿</span>
+                    <span>大部分無障礙</span>
+                </div>
+                <div class="legend-item">
+                    <span>♿♿♿</span>
+                    <span>部分無障礙</span>
+                </div>
+                <div class="legend-item">
+                    <span>♿♿</span>
+                    <span>少數無障礙</span>
+                </div>
+                <div class="legend-item">
+                    <span>♿</span>
+                    <span>需步行能力</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 篩選器 -->
+        <div class="filters">
+            <div class="filter-group">
+                <a href="/routes?region=all&difficulty={{ filter_difficulty }}" 
+                   class="filter-btn {{ 'active' if filter_region == 'all' }}">全部地區</a>
+                {% for r in regions %}
+                <a href="/routes?region={{ r.region }}&difficulty={{ filter_difficulty }}" 
+                   class="filter-btn {{ 'active' if filter_region == r.region }}">{{ r.region }}</a>
+                {% endfor %}
+            </div>
+            
+            <div class="filter-group">
+                <a href="/routes?region={{ filter_region }}&difficulty=all" 
+                   class="filter-btn {{ 'active' if filter_difficulty == 'all' }}">全部難度</a>
+                <a href="/routes?region={{ filter_region }}&difficulty=輕鬆" 
+                   class="filter-btn {{ 'active' if filter_difficulty == '輕鬆' }}">輕鬆</a>
+                <a href="/routes?region={{ filter_region }}&difficulty=中等" 
+                   class="filter-btn {{ 'active' if filter_difficulty == '中等' }}">中等</a>
+                <a href="/routes?region={{ filter_region }}&difficulty=挑戰" 
+                   class="filter-btn {{ 'active' if filter_difficulty == '挑戰' }}">挑戰</a>
+            </div>
+        </div>
+        
+        <!-- 路線列表 -->
+        <div class="route-grid">
+            {% for route in routes %}
+            <a href="/routes/{{ route.id }}" class="route-card">
+                <div class="route-header">
+                    <span class="route-region">{{ route.region }}</span>
+                    <span class="difficulty difficulty-{{ route.difficulty }}">{{ route.difficulty }}</span>
+                    <h2 class="route-name">{{ route.name }}</h2>
+                    <p class="route-description">{{ route.description }}</p>
+                </div>
+                
+                <div class="route-body">
+                    <div class="route-stats">
+                        <div class="stat">
+                            <div class="stat-value">{{ route.distance_km }}</div>
+                            <div class="stat-label">公里</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">{{ route.duration_hours }}</div>
+                            <div class="stat-label">小時</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">{{ route.best_season }}</div>
+                            <div class="stat-label">最佳季節</div>
+                        </div>
+                    </div>
+                    
+                    <div class="accessibility-bar">
+                        <span class="accessibility-icons">
+                            {% for i in range(route.accessibility) %}♿{% endfor %}
+                        </span>
+                        <span class="accessibility-text">
+                            {% if route.accessibility >= 5 %}全程無障礙
+                            {% elif route.accessibility >= 4 %}大部分無障礙
+                            {% elif route.accessibility >= 3 %}部分無障礙
+                            {% else %}需步行能力{% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if route.highlights %}
+                    <div class="highlights">
+                        <div class="highlights-title">亮點</div>
+                        <div class="highlights-text">{{ route.highlights }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

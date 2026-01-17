@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>探險圖鑑 | 退休走讀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5f2a;
+            --accent: #00d4aa;
+            --accent-glow: rgba(0, 212, 170, 0.5);
+            --bg: #0a0f0d;
+            --bg-card: #141a17;
+            --text: #e8efe9;
+            --text-muted: #7a8a7e;
+            --border: #2a3a2f;
+            --glass: rgba(26, 95, 42, 0.1);
+            --gold: #ffd700;
+            --purple: #a855f7;
+            --blue: #3b82f6;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        /* Logo 樣式 */
+        .logo-3d-container { perspective: 1000px; width: 50px; height: 50px; }
+        .logo-3d { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; animation: logoRotate 8s ease-in-out infinite; }
+        .logo-3d-text {
+            position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: 900; color: transparent;
+            background: linear-gradient(135deg, #00ffcc, #00d4aa); -webkit-background-clip: text; background-clip: text;
+            filter: drop-shadow(0 0 10px var(--accent));
+        }
+        @keyframes logoRotate {
+            0%, 100% { transform: rotateY(0deg); }
+            25% { transform: rotateY(15deg); }
+            50% { transform: rotateY(0deg); }
+            75% { transform: rotateY(-15deg); }
+        }
+        
+        nav {
+            background: rgba(10, 15, 13, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+        
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #00ff99);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent);
+            background: var(--glass);
+        }
+        
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* 頁面標題 */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        /* 總進度 */
+        .total-progress {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .progress-circle {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .progress-circle svg {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-circle circle {
+            fill: none;
+            stroke-width: 10;
+        }
+        
+        .progress-circle .bg { stroke: var(--border); }
+        .progress-circle .fill {
+            stroke: var(--accent);
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 8px var(--accent));
+            transition: stroke-dashoffset 1s ease-out;
+        }
+        
+        .progress-circle .text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .progress-circle .value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            line-height: 1;
+        }
+        
+        .progress-circle .label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .progress-info {
+            flex: 1;
+        }
+        
+        .progress-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-stats {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .progress-stat {
+            text-align: center;
+        }
+        
+        .progress-stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .progress-stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        /* 路線分組 */
+        .route-group {
+            margin-bottom: 2rem;
+        }
+        
+        .route-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px 16px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .route-group-header:hover {
+            border-color: var(--accent);
+        }
+        
+        .route-group-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .route-group-title h3 {
+            font-size: 1.2rem;
+        }
+        
+        .route-group-progress {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .route-group-bar {
+            width: 150px;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .route-group-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #00ff99);
+            border-radius: 4px;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        
+        .route-group-count {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        /* 景點網格 */
+        .spots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(20, 26, 23, 0.5);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 16px 16px;
+        }
+        
+        .spot-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .spot-card.collected {
+            border-color: var(--accent);
+            background: rgba(0, 212, 170, 0.1);
+        }
+        
+        .spot-card.collected::before {
+            content: '✓';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .spot-card:not(.collected) {
+            opacity: 0.6;
+        }
+        
+        .spot-card:not(.collected):hover {
+            opacity: 1;
+            border-color: var(--text-muted);
+        }
+        
+        .spot-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));
+        }
+        
+        .spot-card:not(.collected) .spot-icon {
+            filter: grayscale(1);
+        }
+        
+        .spot-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .spot-type {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* 稀有度標籤 */
+        .rarity-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        
+        .rarity-common { background: var(--border); color: var(--text-muted); }
+        .rarity-rare { background: var(--blue); color: white; }
+        .rarity-epic { background: var(--purple); color: white; }
+        .rarity-legendary { background: linear-gradient(135deg, var(--gold), #ff8c00); color: #1a1a1a; }
+        
+        /* 打卡彈窗 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .modal-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .modal h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+        
+        /* 成就解鎖提示 */
+        .achievement-toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, var(--gold), #ff8c00);
+            color: #1a1a1a;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            animation: slideIn 0.5s ease-out;
+            z-index: 1001;
+        }
+        
+        .achievement-toast.show {
+            display: flex;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .achievement-toast .icon { font-size: 2rem; }
+        .achievement-toast .info h4 { font-weight: 700; }
+        .achievement-toast .info p { font-size: 0.85rem; opacity: 0.8; }
+        
+        @media (max-width: 768px) {
+            .total-progress {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .progress-stats {
+                justify-content: center;
+            }
+            
+            .spots-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/?user={{ user_id }}" class="logo">
+                <div class="logo-3d-container">
+                    <div class="logo-3d"><div class="logo-3d-text">讀</div></div>
+                </div>
+                <span class="logo-text">退休走讀</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/?user={{ user_id }}">首頁</a></li>
+                <li><a href="/wishes?user={{ user_id }}">願望</a></li>
+                <li><a href="/routes?user={{ user_id }}">路線</a></li>
+                <li><a href="/atlas?user={{ user_id }}" class="active">圖鑑</a></li>
+                <li><a href="/achievements?user={{ user_id }}">成就</a></li>
+                <li><a href="/logs?user={{ user_id }}">紀錄</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">🗺️ 探險圖鑑</h1>
+            <p class="page-subtitle">收集每一個走過的景點，完成你的台灣探險地圖</p>
+        </div>
+        
+        <div class="total-progress">
+            <div class="progress-circle">
+                <svg width="150" height="150">
+                    <circle class="bg" cx="75" cy="75" r="65"></circle>
+                    <circle class="fill" cx="75" cy="75" r="65" 
+                            stroke-dasharray="408.41" 
+                            stroke-dashoffset="{{ 408.41 - (collected / total * 408.41) if total > 0 else 408.41 }}"></circle>
+                </svg>
+                <div class="text">
+                    <div class="value">{{ ((collected / total) * 100)|round|int if total > 0 else 0 }}%</div>
+                    <div class="label">完成度</div>
+                </div>
+            </div>
+            <div class="progress-info">
+                <h2>收集進度</h2>
+                <div class="progress-stats">
+                    <div class="progress-stat">
+                        <div class="progress-stat-value">{{ collected }}</div>
+                        <div class="progress-stat-label">已收集</div>
+                    </div>
+                    <div class="progress-stat">
+                        <div class="progress-stat-value">{{ total }}</div>
+                        <div class="progress-stat-label">總景點</div>
+                    </div>
+                    <div class="progress-stat">
+                        <div class="progress-stat-value">{{ total - collected }}</div>
+                        <div class="progress-stat-label">待探索</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% for route_name, data in routes_map.items() %}
+        <div class="route-group">
+            <div class="route-group-header">
+                <div class="route-group-title">
+                    <span>{{ data.region }}</span>
+                    <h3>{{ route_name }}</h3>
+                </div>
+                <div class="route-group-progress">
+                    <div class="route-group-bar">
+                        <div class="route-group-bar-fill" style="width: {{ (data.collected / data.spots|length * 100) if data.spots|length > 0 else 0 }}%"></div>
+                    </div>
+                    <span class="route-group-count">{{ data.collected }}/{{ data.spots|length }}</span>
+                </div>
+            </div>
+            
+            <div class="spots-grid">
+                {% for spot in data.spots %}
+                <div class="spot-card {{ 'collected' if spot.collected else '' }}" 
+                     data-id="{{ spot.id }}" 
+                     data-name="{{ spot.name }}"
+                     data-collected="{{ spot.collected }}">
+                    <div class="spot-icon">{{ spot.icon }}</div>
+                    <div class="spot-name">{{ spot.name }}</div>
+                    <div class="spot-type">{{ spot.spot_type }}</div>
+                    <span class="rarity-badge rarity-{{ spot.rarity }}">
+                        {% if spot.rarity == 'common' %}普通
+                        {% elif spot.rarity == 'rare' %}稀有
+                        {% elif spot.rarity == 'epic' %}史詩
+                        {% else %}傳說{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </main>
+    
+    <!-- 打卡彈窗 -->
+    <div class="modal-overlay" id="checkin-modal">
+        <div class="modal">
+            <div class="modal-icon" id="modal-icon">📍</div>
+            <h3 id="modal-title">打卡景點</h3>
+            <p id="modal-desc">確定要在此景點打卡嗎？</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="confirmCheckin()">確認打卡</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 成就提示 -->
+    <div class="achievement-toast" id="achievement-toast">
+        <div class="icon">🏆</div>
+        <div class="info">
+            <h4 id="toast-title">成就解鎖！</h4>
+            <p id="toast-desc"></p>
+        </div>
+    </div>
+    
+    <script>
+        const userId = '{{ user_id }}';
+        let currentSpotId = null;
+        
+        document.querySelectorAll('.spot-card:not(.collected)').forEach(card => {
+            card.addEventListener('click', () => {
+                currentSpotId = card.dataset.id;
+                document.getElementById('modal-title').textContent = card.dataset.name;
+                document.getElementById('checkin-modal').classList.add('active');
+            });
+        });
+        
+        function closeModal() {
+            document.getElementById('checkin-modal').classList.remove('active');
+        }
+        
+        async function confirmCheckin() {
+            if (!currentSpotId) return;
+            
+            try {
+                const res = await fetch(`/spot/${currentSpotId}/checkin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    closeModal();
+                    
+                    // 顯示成就
+                    if (data.unlocked && data.unlocked.length > 0) {
+                        const toast = document.getElementById('achievement-toast');
+                        document.getElementById('toast-title').textContent = data.unlocked[0].icon + ' ' + data.unlocked[0].name;
+                        document.getElementById('toast-desc').textContent = '成就解鎖！';
+                        toast.classList.add('show');
+                        setTimeout(() => toast.classList.remove('show'), 3000);
+                    }
+                    
+                    // 刷新頁面
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    alert(data.message || '打卡失敗');
+                }
+            } catch (e) {
+                alert('發生錯誤，請稍後再試');
+            }
+        }
+        
+        // 點擊外部關閉
+        document.getElementById('checkin-modal').addEventListener('click', e => {
+            if (e.target.classList.contains('modal-overlay')) closeModal();
+        });
+    </script>
+</body>
+</html>
