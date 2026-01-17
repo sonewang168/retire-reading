@@ -723,6 +723,55 @@ def achievements_page():
                           unlocked=unlocked,
                           user_id=user_id)
 
+@app.route('/checkins')
+def checkins_page():
+    """打卡記錄頁面"""
+    user_id = request.args.get('user', 'default')
+    
+    with get_db() as conn:
+        # 取得所有打卡記錄
+        checkins = conn.execute('''
+            SELECT c.*, s.name as spot_name, s.icon, s.spot_type,
+                   r.name as route_name, r.region
+            FROM checkins c
+            JOIN spots s ON c.spot_id = s.id
+            JOIN routes r ON c.route_id = r.id
+            WHERE c.user_id = ?
+            ORDER BY c.checkin_date DESC, c.id DESC
+        ''', (user_id,)).fetchall()
+        
+        # 統計
+        photo_count = sum(1 for c in checkins if c['photo_url'])
+        note_count = sum(1 for c in checkins if c['note'])
+    
+    # 檢查 Google 連動狀態
+    google_connected = 'google_access_token' in session
+    album_url = None
+    doc_url = None
+    
+    if google_connected:
+        try:
+            from google_integration import get_or_create_album, get_or_create_travel_doc
+            
+            album = get_or_create_album(session['google_access_token'])
+            if album.get('productUrl'):
+                album_url = album['productUrl']
+            
+            doc = get_or_create_travel_doc(session['google_access_token'])
+            if doc.get('documentId'):
+                doc_url = f"https://docs.google.com/document/d/{doc['documentId']}/edit"
+        except:
+            pass
+    
+    return render_template('checkins.html',
+                          checkins=checkins,
+                          photo_count=photo_count,
+                          note_count=note_count,
+                          google_connected=google_connected,
+                          album_url=album_url,
+                          doc_url=doc_url,
+                          user_id=user_id)
+
 @app.route('/wishes')
 def wishes_list():
     user_id = request.args.get('user', 'default')
@@ -885,35 +934,42 @@ def route_detail(route_id):
 
 @app.route('/spot/<int:spot_id>/checkin', methods=['POST'])
 def checkin_spot(spot_id):
-    """打卡景點（支援照片上傳）"""
+    """打卡景點（支援照片上傳 + Google 同步）"""
+    import uuid
+    
     # 支援 JSON 或 FormData
     if request.is_json:
         user_id = request.json.get('user_id', 'default')
         note = request.json.get('note', '')
         photo_url = None
+        photo_data = None
+        photo_filename = None
     else:
         user_id = request.form.get('user_id', 'default')
         note = request.form.get('note', '')
         photo_url = None
+        photo_data = None
+        photo_filename = None
         
         # 處理照片上傳
         if 'photo' in request.files:
             photo = request.files['photo']
             if photo and photo.filename:
-                # 儲存照片到 static/uploads
-                import os
-                import uuid
+                # 讀取照片資料（用於 Google 上傳）
+                photo_data = photo.read()
+                photo.seek(0)  # 重置指標
                 
+                # 儲存照片到 static/uploads
                 upload_dir = os.path.join(app.static_folder or 'static', 'uploads')
                 os.makedirs(upload_dir, exist_ok=True)
                 
                 # 生成唯一檔名
                 ext = photo.filename.rsplit('.', 1)[-1].lower() if '.' in photo.filename else 'jpg'
-                filename = f"{user_id}_{spot_id}_{uuid.uuid4().hex[:8]}.{ext}"
-                filepath = os.path.join(upload_dir, filename)
+                photo_filename = f"{user_id}_{spot_id}_{uuid.uuid4().hex[:8]}.{ext}"
+                filepath = os.path.join(upload_dir, photo_filename)
                 
                 photo.save(filepath)
-                photo_url = f"/static/uploads/{filename}"
+                photo_url = f"/static/uploads/{photo_filename}"
     
     with get_db() as conn:
         # 檢查是否已打卡
@@ -926,7 +982,7 @@ def checkin_spot(spot_id):
             return jsonify({'success': False, 'message': '已經打卡過了'})
         
         # 取得景點資訊
-        spot = conn.execute("SELECT * FROM spots WHERE id = ?", (spot_id,)).fetchone()
+        spot = conn.execute("SELECT s.*, r.name as route_name, r.region FROM spots s JOIN routes r ON s.route_id = r.id WHERE s.id = ?", (spot_id,)).fetchone()
         
         # 新增打卡
         conn.execute('''
@@ -936,14 +992,44 @@ def checkin_spot(spot_id):
         
         conn.commit()
     
+    # ========== Google 同步 ==========
+    google_result = None
+    if session.get('google_access_token'):
+        try:
+            from google_integration import save_checkin_with_photo
+            
+            # 組合地點資訊
+            location = f"{spot['region']} - {spot['route_name']}"
+            
+            # 同步到 Google 相簿 + 文件
+            google_result = save_checkin_with_photo(
+                access_token=session['google_access_token'],
+                spot_name=spot['name'],
+                location=location,
+                notes=note or f"打卡 {spot['name']}",
+                image_data=photo_data,
+                filename=photo_filename
+            )
+        except Exception as e:
+            print(f"Google 同步失敗: {e}")
+            google_result = {'success': False, 'error': str(e)}
+    
     # 檢查成就
     unlocked = check_achievements(user_id)
     
-    return jsonify({
+    result = {
         'success': True,
         'message': f"成功打卡「{spot['name']}」！",
         'unlocked': [{'name': a['name'], 'icon': a['icon']} for a in unlocked]
-    })
+    }
+    
+    # 加入 Google 同步結果
+    if google_result:
+        result['google_sync'] = google_result.get('success', False)
+        if google_result.get('doc', {}).get('documentId'):
+            result['doc_url'] = f"https://docs.google.com/document/d/{google_result['doc']['documentId']}/edit"
+    
+    return jsonify(result)
 
 
 @app.route('/spot/<int:spot_id>/checkin/cancel', methods=['POST'])

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打卡記錄 | 退休走讀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0f0d;
+            --card: #141a17;
+            --text: #e8efe9;
+            --text-muted: #7a8a7e;
+            --accent: #00d4aa;
+            --border: #2a3a2f;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        nav {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--accent);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent);
+        }
+        
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), #00ff99);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .page-header p {
+            color: var(--text-muted);
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem 2rem;
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .google-banner {
+            background: linear-gradient(135deg, #4285f4, #34a853);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .google-banner.not-connected {
+            background: linear-gradient(135deg, #666, #444);
+        }
+        
+        .google-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .google-info .icon {
+            font-size: 2.5rem;
+        }
+        
+        .google-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .google-info p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .google-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-white {
+            background: #fff;
+            color: #333;
+        }
+        
+        .btn-white:hover {
+            background: #f0f0f0;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .checkin-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .checkin-card {
+            background: var(--card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .checkin-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.1);
+        }
+        
+        .checkin-photo {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            background: var(--border);
+        }
+        
+        .checkin-photo.no-photo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: var(--text-muted);
+            height: 150px;
+        }
+        
+        .checkin-content {
+            padding: 1.5rem;
+        }
+        
+        .checkin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .checkin-spot {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .spot-icon {
+            font-size: 2rem;
+        }
+        
+        .spot-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .spot-region {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .checkin-date {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-align: right;
+        }
+        
+        .checkin-note {
+            background: rgba(0, 212, 170, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            color: var(--text);
+            line-height: 1.6;
+            margin-top: 1rem;
+        }
+        
+        .checkin-note.empty {
+            color: var(--text-muted);
+            font-style: italic;
+            background: rgba(100, 100, 100, 0.1);
+            border-left-color: var(--text-muted);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .empty-state a {
+            color: var(--accent);
+        }
+        
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .stats-bar {
+                gap: 1rem;
+            }
+            
+            .stat-item {
+                padding: 0.75rem 1.25rem;
+            }
+            
+            .google-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .google-info {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/?user={{ user_id }}" class="logo">
+                <span>讀</span>
+                <span>退休走讀</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/?user={{ user_id }}">首頁</a></li>
+                <li><a href="/wishes?user={{ user_id }}">願望</a></li>
+                <li><a href="/routes?user={{ user_id }}">路線</a></li>
+                <li><a href="/atlas?user={{ user_id }}">圖鑑</a></li>
+                <li><a href="/checkins?user={{ user_id }}" class="active">打卡</a></li>
+                <li><a href="/achievements?user={{ user_id }}">成就</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <div class="page-header">
+            <h1>📸 我的打卡記錄</h1>
+            <p>記錄每一個美好的旅行瞬間</p>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value">{{ checkins|length }}</div>
+                <div class="stat-label">總打卡數</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ photo_count }}</div>
+                <div class="stat-label">照片數</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ note_count }}</div>
+                <div class="stat-label">心得數</div>
+            </div>
+        </div>
+        
+        <!-- Google 連動狀態 -->
+        <div class="google-banner {{ 'not-connected' if not google_connected else '' }}" id="google-banner">
+            {% if google_connected %}
+            <div class="google-info">
+                <span class="icon">📷</span>
+                <div>
+                    <h3>已連動 Google 帳號</h3>
+                    <p>打卡時會自動同步到 Google 相簿和文件</p>
+                </div>
+            </div>
+            <div class="google-actions">
+                <a href="{{ album_url or '#' }}" target="_blank" class="btn btn-white">📷 開啟相簿</a>
+                <a href="{{ doc_url or '#' }}" target="_blank" class="btn btn-outline">📝 開啟文件</a>
+            </div>
+            {% else %}
+            <div class="google-info">
+                <span class="icon">🔗</span>
+                <div>
+                    <h3>尚未連動 Google</h3>
+                    <p>連動後打卡會自動備份到 Google 相簿和文件</p>
+                </div>
+            </div>
+            <div class="google-actions">
+                <a href="/google-settings" class="btn btn-white">前往連動</a>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if checkins %}
+        <div class="checkin-list">
+            {% for c in checkins %}
+            <div class="checkin-card">
+                {% if c.photo_url %}
+                <img src="{{ c.photo_url }}" alt="{{ c.spot_name }}" class="checkin-photo">
+                {% else %}
+                <div class="checkin-photo no-photo">{{ c.icon or '📍' }}</div>
+                {% endif %}
+                
+                <div class="checkin-content">
+                    <div class="checkin-header">
+                        <div class="checkin-spot">
+                            <span class="spot-icon">{{ c.icon or '📍' }}</span>
+                            <div>
+                                <div class="spot-name">{{ c.spot_name }}</div>
+                                <div class="spot-region">{{ c.region }} · {{ c.route_name }}</div>
+                            </div>
+                        </div>
+                        <div class="checkin-date">
+                            📅 {{ c.checkin_date }}
+                        </div>
+                    </div>
+                    
+                    {% if c.note %}
+                    <div class="checkin-note">{{ c.note }}</div>
+                    {% else %}
+                    <div class="checkin-note empty">（無心得）</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">🗺️</div>
+            <h3>還沒有打卡記錄</h3>
+            <p>前往 <a href="/atlas?user={{ user_id }}">探險圖鑑</a> 開始你的第一次打卡吧！</p>
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>

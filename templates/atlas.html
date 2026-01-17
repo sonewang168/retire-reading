@@ -905,12 +905,29 @@
                         setTimeout(() => toast.classList.remove('show'), 3000);
                     }
                     
+                    // 顯示 Google 同步結果
+                    let msg = data.message;
+                    if (data.google_sync) {
+                        msg += '\n\n✅ 已同步到 Google 相簿和文件！';
+                        if (data.doc_url) {
+                            msg += '\n📝 點擊確定後可查看文件';
+                        }
+                    }
+                    
+                    alert(msg);
+                    
+                    // 如果有文件連結，詢問是否開啟
+                    if (data.doc_url && confirm('是否開啟 Google 文件查看記錄？')) {
+                        window.open(data.doc_url, '_blank');
+                    }
+                    
                     // 刷新頁面
-                    setTimeout(() => location.reload(), 500);
+                    location.reload();
                 } else {
                     alert(data.message || '打卡失敗');
                 }
             } catch (e) {
+                console.error(e);
                 alert('發生錯誤，請稍後再試');
             }
         }
