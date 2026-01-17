@@ -936,118 +936,138 @@ def route_detail(route_id):
 def checkin_spot(spot_id):
     """打卡景點（支援照片上傳 + Google 同步）"""
     import uuid
+    import traceback
     
-    # 支援 JSON 或 FormData
-    if request.is_json:
-        user_id = request.json.get('user_id', 'default')
-        note = request.json.get('note', '')
-        photo_url = None
-        photo_data = None
-        photo_filename = None
-    else:
-        user_id = request.form.get('user_id', 'default')
-        note = request.form.get('note', '')
-        photo_url = None
-        photo_data = None
-        photo_filename = None
-        
-        # 處理照片上傳
-        if 'photo' in request.files:
-            photo = request.files['photo']
-            if photo and photo.filename:
-                # 讀取照片資料（用於 Google 上傳）
-                photo_data = photo.read()
-                photo.seek(0)  # 重置指標
-                
-                # 儲存照片到 static/uploads
-                upload_dir = os.path.join(app.static_folder or 'static', 'uploads')
-                os.makedirs(upload_dir, exist_ok=True)
-                
-                # 生成唯一檔名
-                ext = photo.filename.rsplit('.', 1)[-1].lower() if '.' in photo.filename else 'jpg'
-                photo_filename = f"{user_id}_{spot_id}_{uuid.uuid4().hex[:8]}.{ext}"
-                filepath = os.path.join(upload_dir, photo_filename)
-                
-                photo.save(filepath)
-                photo_url = f"/static/uploads/{photo_filename}"
-    
-    with get_db() as conn:
-        # 檢查是否已打卡
-        existing = conn.execute(
-            "SELECT id FROM checkins WHERE user_id = ? AND spot_id = ?",
-            (user_id, spot_id)
-        ).fetchone()
-        
-        if existing:
-            return jsonify({'success': False, 'message': '已經打卡過了'})
-        
-        # 取得景點資訊
-        spot = conn.execute("SELECT s.*, r.name as route_name, r.region FROM spots s JOIN routes r ON s.route_id = r.id WHERE s.id = ?", (spot_id,)).fetchone()
-        
-        # 新增打卡
-        conn.execute('''
-            INSERT INTO checkins (user_id, spot_id, route_id, checkin_date, note, photo_url)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (user_id, spot_id, spot['route_id'], datetime.now().strftime('%Y-%m-%d'), note, photo_url))
-        
-        conn.commit()
-    
-    # ========== Google 同步 ==========
-    google_result = None
-    imgbb_error = None
-    
-    if session.get('google_access_token'):
-        try:
-            from google_integration import save_checkin_with_photo
+    try:
+        # 支援 JSON 或 FormData
+        if request.is_json:
+            user_id = request.json.get('user_id', 'default')
+            note = request.json.get('note', '')
+            photo_url = None
+            photo_data = None
+            photo_filename = None
+        else:
+            user_id = request.form.get('user_id', 'default')
+            note = request.form.get('note', '')
+            photo_url = None
+            photo_data = None
+            photo_filename = None
             
-            # 組合地點資訊
-            location = f"{spot['region']} - {spot['route_name']}"
+            # 處理照片上傳
+            if 'photo' in request.files:
+                photo = request.files['photo']
+                if photo and photo.filename:
+                    try:
+                        # 讀取照片資料
+                        photo_data = photo.read()
+                        
+                        if photo_data and len(photo_data) > 0:
+                            # 儲存照片到 static/uploads
+                            upload_dir = os.path.join(app.static_folder or 'static', 'uploads')
+                            os.makedirs(upload_dir, exist_ok=True)
+                            
+                            # 生成唯一檔名
+                            ext = photo.filename.rsplit('.', 1)[-1].lower() if '.' in photo.filename else 'jpg'
+                            photo_filename = f"{user_id}_{spot_id}_{uuid.uuid4().hex[:8]}.{ext}"
+                            filepath = os.path.join(upload_dir, photo_filename)
+                            
+                            # 使用 photo_data 寫入檔案
+                            with open(filepath, 'wb') as f:
+                                f.write(photo_data)
+                            
+                            photo_url = f"/static/uploads/{photo_filename}"
+                            print(f"✅ 照片已儲存: {photo_url}, 大小: {len(photo_data)} bytes")
+                    except Exception as e:
+                        print(f"❌ 照片處理錯誤: {e}")
+                        photo_data = None
+                        photo_filename = None
+        
+        with get_db() as conn:
+            # 檢查是否已打卡
+            existing = conn.execute(
+                "SELECT id FROM checkins WHERE user_id = ? AND spot_id = ?",
+                (user_id, spot_id)
+            ).fetchone()
             
-            # 同步到 Google 相簿 + 文件
-            google_result = save_checkin_with_photo(
-                access_token=session['google_access_token'],
-                spot_name=spot['name'],
-                location=location,
-                notes=note or f"打卡 {spot['name']}",
-                image_data=photo_data,
-                filename=photo_filename
-            )
+            if existing:
+                return jsonify({'success': False, 'message': '已經打卡過了'})
             
-            # 檢查 ImgBB 結果
-            if google_result.get('imgbb') and not google_result['imgbb'].get('success'):
-                imgbb_error = google_result['imgbb'].get('error', '上傳失敗')
+            # 取得景點資訊
+            spot = conn.execute("SELECT s.*, r.name as route_name, r.region FROM spots s JOIN routes r ON s.route_id = r.id WHERE s.id = ?", (spot_id,)).fetchone()
+            
+            # 新增打卡
+            conn.execute('''
+                INSERT INTO checkins (user_id, spot_id, route_id, checkin_date, note, photo_url)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (user_id, spot_id, spot['route_id'], datetime.now().strftime('%Y-%m-%d'), note, photo_url))
+            
+            conn.commit()
+        
+        # ========== Google 同步 ==========
+        google_result = None
+        imgbb_error = None
+        
+        if session.get('google_access_token'):
+            try:
+                from google_integration import save_checkin_with_photo
                 
-        except Exception as e:
-            print(f"Google 同步失敗: {e}")
-            google_result = {'success': False, 'error': str(e)}
-    
-    # 檢查成就
-    unlocked = check_achievements(user_id)
-    
-    result = {
-        'success': True,
-        'message': f"成功打卡「{spot['name']}」！",
-        'unlocked': [{'name': a['name'], 'icon': a['icon']} for a in unlocked],
-        'has_photo': bool(photo_url)
-    }
-    
-    # 加入 Google 同步結果
-    if google_result:
-        result['google_sync'] = google_result.get('success', False)
-        if google_result.get('doc', {}).get('documentId'):
-            result['doc_url'] = f"https://docs.google.com/document/d/{google_result['doc']['documentId']}/edit"
-        if google_result.get('album', {}).get('productUrl'):
-            result['album_url'] = google_result['album']['productUrl']
-        # 加入 ImgBB 錯誤信息
-        if imgbb_error:
-            result['imgbb_error'] = imgbb_error
-        # 檢查是否有圖片插入文件
-        if google_result.get('entry', {}).get('has_image'):
-            result['doc_has_image'] = True
-    else:
-        result['google_sync'] = False
-    
-    return jsonify(result)
+                # 組合地點資訊
+                location = f"{spot['region']} - {spot['route_name']}"
+                
+                # 同步到 Google 相簿 + 文件
+                google_result = save_checkin_with_photo(
+                    access_token=session['google_access_token'],
+                    spot_name=spot['name'],
+                    location=location,
+                    notes=note or f"打卡 {spot['name']}",
+                    image_data=photo_data,
+                    filename=photo_filename
+                )
+                
+                # 檢查 ImgBB 結果
+                if google_result.get('imgbb') and not google_result['imgbb'].get('success'):
+                    imgbb_error = google_result['imgbb'].get('error', '上傳失敗')
+                    
+            except Exception as e:
+                print(f"Google 同步失敗: {e}")
+                google_result = {'success': False, 'error': str(e)}
+        
+        # 檢查成就
+        unlocked = check_achievements(user_id)
+        
+        result = {
+            'success': True,
+            'message': f"成功打卡「{spot['name']}」！",
+            'unlocked': [{'name': a['name'], 'icon': a['icon']} for a in unlocked],
+            'has_photo': bool(photo_url)
+        }
+        
+        # 加入 Google 同步結果
+        if google_result:
+            result['google_sync'] = google_result.get('success', False)
+            if google_result.get('doc', {}).get('documentId'):
+                result['doc_url'] = f"https://docs.google.com/document/d/{google_result['doc']['documentId']}/edit"
+            if google_result.get('album', {}).get('productUrl'):
+                result['album_url'] = google_result['album']['productUrl']
+            # 加入 ImgBB 錯誤信息
+            if imgbb_error:
+                result['imgbb_error'] = imgbb_error
+            # 檢查是否有圖片插入文件
+            if google_result.get('entry', {}).get('has_image'):
+                result['doc_has_image'] = True
+        else:
+            result['google_sync'] = False
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        error_msg = str(e)
+        print(f"❌ 打卡錯誤: {error_msg}")
+        print(traceback.format_exc())
+        return jsonify({
+            'success': False,
+            'message': f'打卡失敗: {error_msg}'
+        }), 500
 
 
 @app.route('/spot/<int:spot_id>/checkin/cancel', methods=['POST'])

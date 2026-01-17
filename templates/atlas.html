@@ -1032,15 +1032,29 @@
             updateStep(3, 'pending');
             
             try {
+                // 驗證 spot ID
+                if (!currentSpotId || isNaN(parseInt(currentSpotId))) {
+                    throw new Error('景點 ID 無效');
+                }
+                
+                const spotId = parseInt(currentSpotId);
+                console.log('打卡景點 ID:', spotId);
+                
                 // 步驟 1: 準備資料
                 updateProgress(10, '準備打卡資料...');
                 
                 const formData = new FormData();
-                formData.append('user_id', userId);
-                formData.append('note', note);
+                formData.append('user_id', userId || 'default');
+                formData.append('note', note || '');
+                
                 if (selectedPhoto) {
+                    // 檢查檔案大小
+                    if (selectedPhoto.size > 10 * 1024 * 1024) {
+                        throw new Error('照片太大，請選擇小於 10MB 的照片');
+                    }
                     formData.append('photo', selectedPhoto);
-                    updateProgress(20, '壓縮照片中...');
+                    updateProgress(20, '準備照片中...');
+                    console.log('照片大小:', selectedPhoto.size, 'bytes');
                 }
                 
                 // 步驟 2: 發送請求
@@ -1048,14 +1062,32 @@
                 updateStep(1, 'done');
                 updateStep(2, 'active');
                 
-                const res = await fetch(`/spot/${currentSpotId}/checkin`, {
+                const url = '/spot/' + spotId + '/checkin';
+                console.log('請求 URL:', url);
+                
+                const res = await fetch(url, {
                     method: 'POST',
                     body: formData
                 });
                 
+                console.log('回應狀態:', res.status);
                 updateProgress(70, '處理回應...');
                 
-                const data = await res.json();
+                // 檢查 HTTP 狀態
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error('伺服器錯誤:', errorText);
+                    throw new Error('伺服器錯誤 (' + res.status + ')');
+                }
+                
+                let data;
+                try {
+                    data = await res.json();
+                    console.log('回應資料:', data);
+                } catch (jsonError) {
+                    console.error('JSON 解析錯誤:', jsonError);
+                    throw new Error('伺服器回應格式錯誤');
+                }
                 
                 // 步驟 3: 檢查結果
                 updateStep(2, 'done');
