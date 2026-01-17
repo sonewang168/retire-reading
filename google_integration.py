@@ -496,8 +496,6 @@ def create_formatted_travel_entry(access_token, doc_id, spot_name, location, dat
         return {'text_result': text_result, 'image_result': img_result, 'has_image': True}
     
     return text_result
-    
-    return response.json()
 
 
 def insert_image_to_doc(access_token, doc_id, image_url):

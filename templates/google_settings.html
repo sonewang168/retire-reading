@@ -385,6 +385,23 @@
                         <a href="#" class="btn-feature secondary" onclick="testEntry()">測試寫入</a>
                     </div>
                 </div>
+                
+                <!-- ImgBB 圖片託管 -->
+                <div class="feature-card" id="feature-imgbb">
+                    <div class="feature-header">
+                        <div class="feature-icon">🖼️</div>
+                        <div>
+                            <div class="feature-title">ImgBB 圖片託管</div>
+                            <div class="feature-subtitle" id="imgbb-status-text">檢查中...</div>
+                        </div>
+                    </div>
+                    <p class="feature-desc">
+                        照片會上傳到 ImgBB 取得公開 URL，才能在 Google 文件中顯示實際圖片（圖文並茂）。
+                    </p>
+                    <div class="feature-actions">
+                        <a href="#" class="btn-feature secondary" onclick="testImgbb()">測試上傳</a>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -396,11 +413,13 @@
                 <li>建立專案並啟用 <code>Google Photos Library API</code> 和 <code>Google Docs API</code></li>
                 <li>建立 OAuth 2.0 用戶端 ID（網頁應用程式）</li>
                 <li>新增授權重新導向 URI：<code>https://your-domain.com/google/callback</code></li>
+                <li>前往 <a href="https://api.imgbb.com/" target="_blank" style="color: #00d4aa;">ImgBB API</a> 取得 API Key（用於圖文並茂）</li>
                 <li>在 Railway 環境變數中設定：
                     <ul>
                         <li><code>GOOGLE_CLIENT_ID</code></li>
                         <li><code>GOOGLE_CLIENT_SECRET</code></li>
                         <li><code>GOOGLE_REDIRECT_URI</code></li>
+                        <li><code>IMGBB_API_KEY</code> ⬅️ 圖文並茂必須</li>
                     </ul>
                 </li>
             </ol>
@@ -452,6 +471,9 @@
                     document.getElementById('feature-photos').classList.add('disabled');
                     document.getElementById('feature-docs').classList.add('disabled');
                 }
+                
+                // 檢查 ImgBB 狀態
+                checkImgbbStatus();
             } catch (error) {
                 console.error('檢查狀態失敗:', error);
                 document.getElementById('loading').classList.remove('show');
@@ -569,6 +591,57 @@
                 }
             } catch (error) {
                 alert('測試寫入失敗：' + error.message);
+            }
+        }
+        
+        // 檢查 ImgBB 狀態
+        async function checkImgbbStatus() {
+            try {
+                const response = await fetch('/google/imgbb/status');
+                const data = await response.json();
+                
+                const statusText = document.getElementById('imgbb-status-text');
+                const featureCard = document.getElementById('feature-imgbb');
+                
+                if (data.configured) {
+                    statusText.textContent = '✅ 已設定';
+                    statusText.style.color = '#00d4aa';
+                    featureCard.classList.remove('disabled');
+                } else {
+                    statusText.textContent = '❌ 未設定 IMGBB_API_KEY';
+                    statusText.style.color = '#ff6b6b';
+                    featureCard.classList.add('disabled');
+                }
+            } catch (error) {
+                console.error('檢查 ImgBB 狀態失敗:', error);
+                document.getElementById('imgbb-status-text').textContent = '檢查失敗';
+            }
+        }
+        
+        // 測試 ImgBB 上傳
+        async function testImgbb() {
+            const statusText = document.getElementById('imgbb-status-text');
+            statusText.textContent = '🔄 測試中...';
+            
+            try {
+                const response = await fetch('/google/imgbb/test', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusText.textContent = '✅ 測試成功';
+                    statusText.style.color = '#00d4aa';
+                    alert('ImgBB 上傳測試成功！\n\n圖片 URL：\n' + result.url);
+                } else {
+                    statusText.textContent = '❌ ' + (result.error || '測試失敗');
+                    statusText.style.color = '#ff6b6b';
+                    alert('ImgBB 測試失敗：' + (result.error || '未知錯誤'));
+                }
+            } catch (error) {
+                statusText.textContent = '❌ 測試失敗';
+                statusText.style.color = '#ff6b6b';
+                alert('ImgBB 測試失敗：' + error.message);
             }
         }
         

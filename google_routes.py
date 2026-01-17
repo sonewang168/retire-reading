@@ -11,7 +11,7 @@ from google_integration import (
     get_auth_url, exchange_code_for_tokens, refresh_access_token,
     get_user_info, get_or_create_album, upload_photo_to_album,
     list_album_photos, get_or_create_travel_doc, create_formatted_travel_entry,
-    save_checkin_with_photo
+    save_checkin_with_photo, upload_to_imgbb, IMGBB_API_KEY
 )
 
 google_bp = Blueprint('google', __name__, url_prefix='/google')
@@ -243,4 +243,32 @@ def checkin_with_google():
     if result.get('album', {}).get('productUrl'):
         result['album_url'] = result['album']['productUrl']
     
+    return jsonify(result)
+
+
+# ==================== ImgBB 狀態 ====================
+
+@google_bp.route('/imgbb/status')
+def imgbb_status():
+    """檢查 ImgBB API Key 狀態"""
+    return jsonify({
+        'configured': bool(IMGBB_API_KEY),
+        'key_preview': IMGBB_API_KEY[:8] + '...' if IMGBB_API_KEY else None
+    })
+
+
+@google_bp.route('/imgbb/test', methods=['POST'])
+def imgbb_test():
+    """測試 ImgBB 上傳"""
+    if not IMGBB_API_KEY:
+        return jsonify({'success': False, 'error': 'IMGBB_API_KEY 未設定'})
+    
+    # 建立一個簡單的測試圖片（1x1 紅色像素）
+    import base64
+    # 最小的有效 PNG 圖片（1x1 紅色像素）
+    test_image = base64.b64decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=='
+    )
+    
+    result = upload_to_imgbb(test_image, 'test_image.png')
     return jsonify(result)
