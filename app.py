@@ -1355,7 +1355,9 @@ def search_content(keyword, user_id):
     
     return '\n'.join(result)
 
+# 應用啟動時自動初始化資料庫（gunicorn 和直接執行都會觸發）
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
