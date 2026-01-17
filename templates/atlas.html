@@ -629,6 +629,115 @@
         .btn-danger:hover {
             box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
         }
+        
+        /* 進度條樣式 */
+        .progress-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 212, 170, 0.2);
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00d4aa, #00ff99);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-status {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-steps {
+            text-align: left;
+            margin-top: 1rem;
+        }
+        
+        .step {
+            padding: 0.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .step.active {
+            color: var(--accent);
+        }
+        
+        .step.done {
+            color: #00ff99;
+        }
+        
+        .step.error {
+            color: #ff6b6b;
+        }
+        
+        .step-icon {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* 結果樣式 */
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .result-message {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        
+        .result-details {
+            text-align: left;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .result-details .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .result-details .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-details .success {
+            color: #00ff99;
+        }
+        
+        .result-details .error {
+            color: #ff6b6b;
+        }
+        
+        .result-details .warning {
+            color: #ffd93d;
+        }
     </style>
 </head>
 <body>
@@ -732,29 +841,58 @@
     <!-- 打卡彈窗 -->
     <div class="modal-overlay" id="checkin-modal">
         <div class="modal">
-            <div class="modal-icon" id="modal-icon">📍</div>
-            <h3 id="modal-title">打卡景點</h3>
-            
-            <!-- 照片上傳區 -->
-            <div class="photo-upload-area">
-                <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none;">
-                <div class="photo-preview" id="photo-preview" onclick="document.getElementById('photo-input').click()">
-                    <div class="upload-hint">
-                        <span class="camera-icon">📷</span>
-                        <span>點擊拍照或上傳照片</span>
-                        <span class="optional">（選填）</span>
+            <!-- 正常輸入模式 -->
+            <div id="checkin-input-view">
+                <div class="modal-icon" id="modal-icon">📍</div>
+                <h3 id="modal-title">打卡景點</h3>
+                
+                <!-- 照片上傳區 -->
+                <div class="photo-upload-area">
+                    <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none;">
+                    <div class="photo-preview" id="photo-preview" onclick="document.getElementById('photo-input').click()">
+                        <div class="upload-hint">
+                            <span class="camera-icon">📷</span>
+                            <span>點擊拍照或上傳照片</span>
+                            <span class="optional">（選填）</span>
+                        </div>
                     </div>
+                </div>
+                
+                <!-- 心得輸入 -->
+                <div class="note-area">
+                    <textarea id="checkin-note" placeholder="寫下你的旅遊心得...（選填）" rows="3"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel">取消</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm">✓ 確認打卡</button>
                 </div>
             </div>
             
-            <!-- 心得輸入 -->
-            <div class="note-area">
-                <textarea id="checkin-note" placeholder="寫下你的旅遊心得...（選填）" rows="3"></textarea>
+            <!-- 上傳進度模式 -->
+            <div id="checkin-progress-view" style="display:none;">
+                <div class="progress-icon">⏳</div>
+                <h3 id="progress-title">上傳中...</h3>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <p class="progress-status" id="progress-status">正在處理...</p>
+                <div class="progress-steps">
+                    <div class="step" id="step-1"><span class="step-icon">⏳</span> 儲存打卡</div>
+                    <div class="step" id="step-2"><span class="step-icon">⏳</span> 上傳照片</div>
+                    <div class="step" id="step-3"><span class="step-icon">⏳</span> 同步 Google</div>
+                </div>
             </div>
             
-            <div class="modal-actions">
-                <button type="button" class="btn btn-secondary" id="btn-cancel">取消</button>
-                <button type="button" class="btn btn-primary" id="btn-confirm">✓ 確認打卡</button>
+            <!-- 結果模式 -->
+            <div id="checkin-result-view" style="display:none;">
+                <div class="result-icon" id="result-icon">✅</div>
+                <h3 id="result-title">打卡成功！</h3>
+                <p class="result-message" id="result-message"></p>
+                <div class="result-details" id="result-details"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-primary" id="btn-done">完成</button>
+                </div>
             </div>
         </div>
     </div>
@@ -796,9 +934,14 @@
                 currentSpotId = card.dataset.id;
                 currentSpotName = card.dataset.name;
                 document.getElementById('modal-title').textContent = currentSpotName;
+                
+                // 重置到輸入視圖
+                resetCheckinModal();
+                
                 document.getElementById('checkin-modal').classList.add('active');
                 // 重置表單
                 document.getElementById('checkin-note').value = '';
+                document.getElementById('photo-input').value = '';
                 document.getElementById('photo-preview').innerHTML = `
                     <div class="upload-hint">
                         <span class="camera-icon">📷</span>
@@ -877,59 +1020,166 @@
             
             const note = document.getElementById('checkin-note').value.trim();
             
+            // 切換到進度視圖
+            document.getElementById('checkin-input-view').style.display = 'none';
+            document.getElementById('checkin-progress-view').style.display = 'block';
+            document.getElementById('checkin-result-view').style.display = 'none';
+            
+            // 重置進度
+            updateProgress(0, '準備上傳...');
+            updateStep(1, 'active');
+            updateStep(2, 'pending');
+            updateStep(3, 'pending');
+            
             try {
-                // 使用 FormData 支援照片上傳
+                // 步驟 1: 準備資料
+                updateProgress(10, '準備打卡資料...');
+                
                 const formData = new FormData();
                 formData.append('user_id', userId);
                 formData.append('note', note);
                 if (selectedPhoto) {
                     formData.append('photo', selectedPhoto);
+                    updateProgress(20, '壓縮照片中...');
                 }
+                
+                // 步驟 2: 發送請求
+                updateProgress(30, '上傳中...');
+                updateStep(1, 'done');
+                updateStep(2, 'active');
                 
                 const res = await fetch(`/spot/${currentSpotId}/checkin`, {
                     method: 'POST',
                     body: formData
                 });
                 
+                updateProgress(70, '處理回應...');
+                
                 const data = await res.json();
                 
-                if (data.success) {
-                    closeModal();
+                // 步驟 3: 檢查結果
+                updateStep(2, 'done');
+                updateStep(3, 'active');
+                updateProgress(90, '完成同步...');
+                
+                // 顯示結果
+                setTimeout(() => {
+                    updateProgress(100, '完成！');
+                    updateStep(3, data.google_sync ? 'done' : 'warning');
                     
-                    // 顯示成就
-                    if (data.unlocked && data.unlocked.length > 0) {
-                        const toast = document.getElementById('achievement-toast');
-                        document.getElementById('toast-title').textContent = data.unlocked[0].icon + ' ' + data.unlocked[0].name;
-                        document.getElementById('toast-desc').textContent = '成就解鎖！';
-                        toast.classList.add('show');
-                        setTimeout(() => toast.classList.remove('show'), 3000);
-                    }
+                    // 切換到結果視圖
+                    document.getElementById('checkin-progress-view').style.display = 'none';
+                    document.getElementById('checkin-result-view').style.display = 'block';
                     
-                    // 顯示 Google 同步結果
-                    let msg = data.message;
-                    if (data.google_sync) {
-                        msg += '\n\n✅ 已同步到 Google 相簿和文件！';
-                        if (data.doc_url) {
-                            msg += '\n📝 點擊確定後可查看文件';
+                    if (data.success) {
+                        document.getElementById('result-icon').textContent = '✅';
+                        document.getElementById('result-title').textContent = '打卡成功！';
+                        document.getElementById('result-message').textContent = data.message;
+                        
+                        // 詳細結果
+                        let details = `
+                            <div class="detail-item">
+                                <span>本地打卡</span>
+                                <span class="success">✓ 成功</span>
+                            </div>
+                        `;
+                        
+                        if (selectedPhoto) {
+                            details += `
+                                <div class="detail-item">
+                                    <span>照片上傳</span>
+                                    <span class="success">✓ 已儲存</span>
+                                </div>
+                            `;
                         }
+                        
+                        if (data.google_sync) {
+                            details += `
+                                <div class="detail-item">
+                                    <span>Google 同步</span>
+                                    <span class="success">✓ 成功</span>
+                                </div>
+                            `;
+                        } else if (data.google_sync === false) {
+                            details += `
+                                <div class="detail-item">
+                                    <span>Google 同步</span>
+                                    <span class="warning">⚠ 未連動</span>
+                                </div>
+                            `;
+                        }
+                        
+                        if (data.imgbb_error) {
+                            details += `
+                                <div class="detail-item">
+                                    <span>圖片託管</span>
+                                    <span class="error">✗ ${data.imgbb_error}</span>
+                                </div>
+                            `;
+                        }
+                        
+                        document.getElementById('result-details').innerHTML = details;
+                        
+                        // 顯示成就
+                        if (data.unlocked && data.unlocked.length > 0) {
+                            const toast = document.getElementById('achievement-toast');
+                            document.getElementById('toast-title').textContent = data.unlocked[0].icon + ' ' + data.unlocked[0].name;
+                            document.getElementById('toast-desc').textContent = '成就解鎖！';
+                            toast.classList.add('show');
+                            setTimeout(() => toast.classList.remove('show'), 3000);
+                        }
+                    } else {
+                        document.getElementById('result-icon').textContent = '❌';
+                        document.getElementById('result-title').textContent = '打卡失敗';
+                        document.getElementById('result-message').textContent = data.message || '未知錯誤';
+                        document.getElementById('result-details').innerHTML = `
+                            <div class="detail-item">
+                                <span>錯誤訊息</span>
+                                <span class="error">${data.message || '請稍後再試'}</span>
+                            </div>
+                        `;
                     }
-                    
-                    alert(msg);
-                    
-                    // 如果有文件連結，詢問是否開啟
-                    if (data.doc_url && confirm('是否開啟 Google 文件查看記錄？')) {
-                        window.open(data.doc_url, '_blank');
-                    }
-                    
-                    // 刷新頁面
-                    location.reload();
-                } else {
-                    alert(data.message || '打卡失敗');
-                }
+                }, 300);
+                
             } catch (e) {
-                console.error(e);
-                alert('發生錯誤，請稍後再試');
+                console.error('打卡錯誤:', e);
+                
+                // 顯示錯誤
+                document.getElementById('checkin-progress-view').style.display = 'none';
+                document.getElementById('checkin-result-view').style.display = 'block';
+                document.getElementById('result-icon').textContent = '❌';
+                document.getElementById('result-title').textContent = '發生錯誤';
+                document.getElementById('result-message').textContent = '網路連線問題或伺服器錯誤';
+                document.getElementById('result-details').innerHTML = `
+                    <div class="detail-item">
+                        <span>錯誤詳情</span>
+                        <span class="error">${e.message || '未知錯誤'}</span>
+                    </div>
+                `;
             }
+        }
+        
+        function updateProgress(percent, status) {
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('progress-status').textContent = status;
+        }
+        
+        function updateStep(stepNum, state) {
+            const step = document.getElementById('step-' + stepNum);
+            step.className = 'step ' + state;
+            const icon = step.querySelector('.step-icon');
+            if (state === 'done') icon.textContent = '✓';
+            else if (state === 'error') icon.textContent = '✗';
+            else if (state === 'warning') icon.textContent = '⚠';
+            else if (state === 'active') icon.textContent = '⏳';
+            else icon.textContent = '○';
+        }
+        
+        function resetCheckinModal() {
+            document.getElementById('checkin-input-view').style.display = 'block';
+            document.getElementById('checkin-progress-view').style.display = 'none';
+            document.getElementById('checkin-result-view').style.display = 'none';
+            document.getElementById('progress-bar').style.width = '0%';
         }
         
         async function cancelCheckin() {
@@ -962,7 +1212,14 @@
         
         // 點擊外部關閉
         document.getElementById('checkin-modal').addEventListener('click', e => {
-            if (e.target.classList.contains('modal-overlay')) closeModal();
+            if (e.target.classList.contains('modal-overlay')) {
+                // 如果在結果視圖，刷新頁面
+                if (document.getElementById('checkin-result-view').style.display !== 'none') {
+                    location.reload();
+                } else if (document.getElementById('checkin-progress-view').style.display === 'none') {
+                    closeModal();
+                }
+            }
         });
         document.getElementById('detail-modal').addEventListener('click', e => {
             if (e.target.classList.contains('modal-overlay')) closeDetailModal();
@@ -973,6 +1230,11 @@
         document.getElementById('btn-confirm').addEventListener('click', confirmCheckin);
         document.getElementById('btn-cancel-checkin').addEventListener('click', cancelCheckin);
         document.getElementById('btn-close-detail').addEventListener('click', closeDetailModal);
+        document.getElementById('btn-done').addEventListener('click', () => {
+            resetCheckinModal();
+            closeModal();
+            location.reload();
+        });
     </script>
 </body>
 </html>

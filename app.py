@@ -994,6 +994,8 @@ def checkin_spot(spot_id):
     
     # ========== Google 同步 ==========
     google_result = None
+    imgbb_error = None
+    
     if session.get('google_access_token'):
         try:
             from google_integration import save_checkin_with_photo
@@ -1010,6 +1012,11 @@ def checkin_spot(spot_id):
                 image_data=photo_data,
                 filename=photo_filename
             )
+            
+            # 檢查 ImgBB 結果
+            if google_result.get('imgbb') and not google_result['imgbb'].get('success'):
+                imgbb_error = google_result['imgbb'].get('error', '上傳失敗')
+                
         except Exception as e:
             print(f"Google 同步失敗: {e}")
             google_result = {'success': False, 'error': str(e)}
@@ -1020,7 +1027,8 @@ def checkin_spot(spot_id):
     result = {
         'success': True,
         'message': f"成功打卡「{spot['name']}」！",
-        'unlocked': [{'name': a['name'], 'icon': a['icon']} for a in unlocked]
+        'unlocked': [{'name': a['name'], 'icon': a['icon']} for a in unlocked],
+        'has_photo': bool(photo_url)
     }
     
     # 加入 Google 同步結果
@@ -1028,6 +1036,16 @@ def checkin_spot(spot_id):
         result['google_sync'] = google_result.get('success', False)
         if google_result.get('doc', {}).get('documentId'):
             result['doc_url'] = f"https://docs.google.com/document/d/{google_result['doc']['documentId']}/edit"
+        if google_result.get('album', {}).get('productUrl'):
+            result['album_url'] = google_result['album']['productUrl']
+        # 加入 ImgBB 錯誤信息
+        if imgbb_error:
+            result['imgbb_error'] = imgbb_error
+        # 檢查是否有圖片插入文件
+        if google_result.get('entry', {}).get('has_image'):
+            result['doc_has_image'] = True
+    else:
+        result['google_sync'] = False
     
     return jsonify(result)
 
