@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google 連動 | 退休走讀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0a0f0d 0%, #1a2f1a 100%);
+            min-height: 100vh;
+            color: #e8efe9;
+        }
+        
+        .header {
+            background: rgba(20, 30, 25, 0.95);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 2px solid rgba(0, 212, 170, 0.3);
+        }
+        
+        .back-btn {
+            color: #00d4aa;
+            text-decoration: none;
+            font-size: 1.5rem;
+        }
+        
+        .header h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #00d4aa, #00ff99);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .status-card {
+            background: rgba(20, 30, 25, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(0, 212, 170, 0.3);
+        }
+        
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .status-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+        
+        .status-icon.connected {
+            background: linear-gradient(135deg, #00d4aa, #00ff99);
+        }
+        
+        .status-icon.disconnected {
+            background: rgba(100, 100, 100, 0.5);
+        }
+        
+        .status-info h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .status-text {
+            color: #7a8a7e;
+            font-size: 0.9rem;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(0, 212, 170, 0.1);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #00d4aa;
+        }
+        
+        .user-name {
+            font-weight: 500;
+        }
+        
+        .user-email {
+            color: #7a8a7e;
+            font-size: 0.85rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-google {
+            background: #fff;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .btn-google:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+        
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .btn-disconnect {
+            background: rgba(255, 100, 100, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 100, 100, 0.3);
+        }
+        
+        .btn-disconnect:hover {
+            background: rgba(255, 100, 100, 0.3);
+        }
+        
+        .features-section {
+            margin-top: 2rem;
+        }
+        
+        .features-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #a8c4aa;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .feature-card {
+            background: rgba(0, 212, 170, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 212, 170, 0.2);
+        }
+        
+        .feature-card.disabled {
+            opacity: 0.5;
+        }
+        
+        .feature-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+        }
+        
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .feature-subtitle {
+            color: #7a8a7e;
+            font-size: 0.85rem;
+        }
+        
+        .feature-desc {
+            color: #a8c4aa;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .btn-feature {
+            flex: 1;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        
+        .btn-feature.primary {
+            background: linear-gradient(135deg, #00d4aa, #00aa88);
+            color: #0a0f0d;
+        }
+        
+        .btn-feature.secondary {
+            background: rgba(0, 212, 170, 0.1);
+            color: #00d4aa;
+            border: 1px solid rgba(0, 212, 170, 0.3);
+        }
+        
+        .setup-guide {
+            background: rgba(255, 200, 100, 0.1);
+            border: 1px solid rgba(255, 200, 100, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .setup-guide h3 {
+            color: #ffc864;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .setup-steps {
+            color: #a8c4aa;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+        
+        .setup-steps li {
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .setup-steps code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 212, 170, 0.2);
+            border-top-color: #00d4aa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/" class="back-btn">←</a>
+        <h1>🔗 Google 連動設定</h1>
+    </header>
+    
+    <div class="container">
+        <!-- 連動狀態 -->
+        <div class="status-card">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在檢查連動狀態...</p>
+            </div>
+            
+            <div id="status-content" style="display: none;">
+                <!-- 已連動 -->
+                <div id="connected-view" style="display: none;">
+                    <div class="status-header">
+                        <div class="status-icon connected">✓</div>
+                        <div class="status-info">
+                            <h2>已連動 Google 帳號</h2>
+                            <p class="status-text">可以使用 Google 相簿和文件功能</p>
+                        </div>
+                    </div>
+                    
+                    <div class="user-profile" id="user-profile">
+                        <img src="" alt="頭像" class="user-avatar" id="user-avatar">
+                        <div>
+                            <div class="user-name" id="user-name"></div>
+                            <div class="user-email" id="user-email"></div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-disconnect" onclick="disconnect()">解除連動</button>
+                </div>
+                
+                <!-- 未連動 -->
+                <div id="disconnected-view" style="display: none;">
+                    <div class="status-header">
+                        <div class="status-icon disconnected">🔗</div>
+                        <div class="status-info">
+                            <h2>尚未連動 Google 帳號</h2>
+                            <p class="status-text">連動後可自動同步照片和旅遊記錄</p>
+                        </div>
+                    </div>
+                    
+                    <a href="/google/auth" class="btn btn-google">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                        使用 Google 帳號連動
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 功能卡片 -->
+        <div class="features-section">
+            <h3>📱 可用功能</h3>
+            
+            <div class="feature-grid">
+                <!-- Google 相簿 -->
+                <div class="feature-card" id="feature-photos">
+                    <div class="feature-header">
+                        <div class="feature-icon">📷</div>
+                        <div>
+                            <div class="feature-title">Google 相簿</div>
+                            <div class="feature-subtitle">走讀圖鑑照片庫</div>
+                        </div>
+                    </div>
+                    <p class="feature-desc">
+                        打卡時拍攝的照片會自動上傳到專屬相簿「退休走讀圖鑑」，永久保存你的探險回憶。
+                    </p>
+                    <div class="feature-actions">
+                        <a href="#" class="btn-feature primary" id="btn-open-album" onclick="openAlbum()">開啟相簿</a>
+                        <a href="#" class="btn-feature secondary" onclick="viewPhotos()">瀏覽照片</a>
+                    </div>
+                </div>
+                
+                <!-- Google 文件 -->
+                <div class="feature-card" id="feature-docs">
+                    <div class="feature-header">
+                        <div class="feature-icon">📝</div>
+                        <div>
+                            <div class="feature-title">Google 文件</div>
+                            <div class="feature-subtitle">旅遊日誌記錄</div>
+                        </div>
+                    </div>
+                    <p class="feature-desc">
+                        每次打卡的心得筆記會自動整理到「退休走讀旅遊日誌」，圖文並茂記錄你的旅程點滴。
+                    </p>
+                    <div class="feature-actions">
+                        <a href="#" class="btn-feature primary" id="btn-open-doc" onclick="openDoc()">開啟文件</a>
+                        <a href="#" class="btn-feature secondary" onclick="testEntry()">測試寫入</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 設定指南 -->
+        <div class="setup-guide">
+            <h3>⚙️ 開發者設定指南</h3>
+            <ol class="setup-steps">
+                <li>前往 <a href="https://console.cloud.google.com" target="_blank" style="color: #00d4aa;">Google Cloud Console</a></li>
+                <li>建立專案並啟用 <code>Google Photos Library API</code> 和 <code>Google Docs API</code></li>
+                <li>建立 OAuth 2.0 用戶端 ID（網頁應用程式）</li>
+                <li>新增授權重新導向 URI：<code>https://your-domain.com/google/callback</code></li>
+                <li>在 Railway 環境變數中設定：
+                    <ul>
+                        <li><code>GOOGLE_CLIENT_ID</code></li>
+                        <li><code>GOOGLE_CLIENT_SECRET</code></li>
+                        <li><code>GOOGLE_REDIRECT_URI</code></li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        let isConnected = false;
+        let albumUrl = '';
+        let docUrl = '';
+        
+        // 檢查連動狀態
+        async function checkStatus() {
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                const response = await fetch('/google/status');
+                const data = await response.json();
+                
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('status-content').style.display = 'block';
+                
+                if (data.connected) {
+                    isConnected = true;
+                    document.getElementById('connected-view').style.display = 'block';
+                    document.getElementById('disconnected-view').style.display = 'none';
+                    
+                    // 顯示使用者資訊
+                    if (data.user) {
+                        if (data.user.picture) {
+                            document.getElementById('user-avatar').src = data.user.picture;
+                        }
+                        document.getElementById('user-name').textContent = data.user.name || '';
+                        document.getElementById('user-email').textContent = data.user.email || '';
+                    }
+                    
+                    // 啟用功能卡片
+                    document.getElementById('feature-photos').classList.remove('disabled');
+                    document.getElementById('feature-docs').classList.remove('disabled');
+                    
+                    // 預先取得相簿和文件連結
+                    loadAlbumAndDoc();
+                } else {
+                    isConnected = false;
+                    document.getElementById('connected-view').style.display = 'none';
+                    document.getElementById('disconnected-view').style.display = 'block';
+                    
+                    // 停用功能卡片
+                    document.getElementById('feature-photos').classList.add('disabled');
+                    document.getElementById('feature-docs').classList.add('disabled');
+                }
+            } catch (error) {
+                console.error('檢查狀態失敗:', error);
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('status-content').style.display = 'block';
+                document.getElementById('disconnected-view').style.display = 'block';
+            }
+        }
+        
+        // 載入相簿和文件資訊
+        async function loadAlbumAndDoc() {
+            try {
+                // 取得相簿
+                const albumRes = await fetch('/google/album');
+                const album = await albumRes.json();
+                if (album.productUrl) {
+                    albumUrl = album.productUrl;
+                }
+                
+                // 取得文件
+                const docRes = await fetch('/google/doc');
+                const doc = await docRes.json();
+                if (doc.url) {
+                    docUrl = doc.url;
+                }
+            } catch (error) {
+                console.error('載入資源失敗:', error);
+            }
+        }
+        
+        // 解除連動
+        async function disconnect() {
+            if (!confirm('確定要解除 Google 連動嗎？')) return;
+            
+            try {
+                await fetch('/google/disconnect');
+                location.reload();
+            } catch (error) {
+                alert('解除連動失敗');
+            }
+        }
+        
+        // 開啟相簿
+        function openAlbum() {
+            if (!isConnected) {
+                alert('請先連動 Google 帳號');
+                return;
+            }
+            if (albumUrl) {
+                window.open(albumUrl, '_blank');
+            } else {
+                alert('相簿連結尚未準備好，請稍後再試');
+            }
+        }
+        
+        // 開啟文件
+        function openDoc() {
+            if (!isConnected) {
+                alert('請先連動 Google 帳號');
+                return;
+            }
+            if (docUrl) {
+                window.open(docUrl, '_blank');
+            } else {
+                alert('文件連結尚未準備好，請稍後再試');
+            }
+        }
+        
+        // 瀏覽照片
+        async function viewPhotos() {
+            if (!isConnected) {
+                alert('請先連動 Google 帳號');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/google/album/photos');
+                const data = await response.json();
+                
+                if (data.mediaItems && data.mediaItems.length > 0) {
+                    alert(`相簿中有 ${data.mediaItems.length} 張照片`);
+                } else {
+                    alert('相簿中還沒有照片');
+                }
+            } catch (error) {
+                alert('載入照片失敗');
+            }
+        }
+        
+        // 測試寫入文件
+        async function testEntry() {
+            if (!isConnected) {
+                alert('請先連動 Google 帳號');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/google/doc/entry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        spot_name: '測試景點',
+                        location: '台灣某處',
+                        notes: '這是一筆測試記錄，確認 Google 文件整合功能正常運作！'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.doc_url) {
+                    if (confirm('測試寫入成功！是否開啟文件查看？')) {
+                        window.open(result.doc_url, '_blank');
+                    }
+                } else {
+                    alert('寫入失敗：' + JSON.stringify(result));
+                }
+            } catch (error) {
+                alert('測試寫入失敗：' + error.message);
+            }
+        }
+        
+        // 頁面載入時檢查狀態
+        checkStatus();
+    </script>
+</body>
+</html>

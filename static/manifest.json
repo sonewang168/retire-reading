@@ -1,0 +1,26 @@
+{
+  "name": "退休走讀",
+  "short_name": "退休走讀",
+  "description": "旅遊願望清單 × 探險圖鑑 二合一系統",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f0d",
+  "theme_color": "#00d4aa",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "lifestyle"],
+  "lang": "zh-TW"
+}

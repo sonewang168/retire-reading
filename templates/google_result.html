@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google 連動 | 退休走讀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0a0f0d 0%, #1a2f1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .result-card {
+            background: rgba(20, 30, 25, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            border: 2px solid rgba(0, 212, 170, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 3rem;
+        }
+        
+        .icon.success {
+            background: linear-gradient(135deg, #00d4aa, #00ff99);
+            box-shadow: 0 10px 40px rgba(0, 212, 170, 0.4);
+        }
+        
+        .icon.error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            box-shadow: 0 10px 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        h1 {
+            color: #e8efe9;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .message {
+            color: #a8c4aa;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .user-info {
+            background: rgba(0, 212, 170, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(0, 212, 170, 0.2);
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            border: 3px solid #00d4aa;
+        }
+        
+        .user-name {
+            color: #e8efe9;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        
+        .user-email {
+            color: #7a8a7e;
+            font-size: 0.9rem;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .feature {
+            background: rgba(0, 212, 170, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid rgba(0, 212, 170, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-title {
+            color: #e8efe9;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .feature-desc {
+            color: #7a8a7e;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4aa, #00aa88);
+            color: #0a0f0d;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #00d4aa;
+            border: 2px solid #00d4aa;
+            margin-left: 1rem;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 212, 170, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="result-card">
+        {% if success %}
+        <div class="icon success">✓</div>
+        <h1>連動成功！</h1>
+        <p class="message">{{ message }}</p>
+        
+        {% if user %}
+        <div class="user-info">
+            {% if user.picture %}
+            <img src="{{ user.picture }}" alt="頭像" class="user-avatar">
+            {% endif %}
+            <div class="user-name">{{ user.name }}</div>
+            <div class="user-email">{{ user.email }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">📷</div>
+                <div class="feature-title">Google 相簿</div>
+                <div class="feature-desc">走讀圖鑑照片</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📝</div>
+                <div class="feature-title">Google 文件</div>
+                <div class="feature-desc">旅遊日誌記錄</div>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="icon error">✗</div>
+        <h1>連動失敗</h1>
+        <p class="message">{{ message }}</p>
+        {% endif %}
+        
+        <div>
+            <a href="/" class="btn btn-primary">返回首頁</a>
+            {% if not success %}
+            <a href="/google/auth" class="btn btn-secondary">重新連動</a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
