@@ -672,7 +672,7 @@ def atlas():
         spots = conn.execute('''
             SELECT s.*, r.name as route_name, r.region,
                    CASE WHEN c.id IS NOT NULL THEN 1 ELSE 0 END as collected,
-                   c.checkin_date, c.photo_url
+                   c.checkin_date, c.photo_url, c.note as checkin_note
             FROM spots s
             JOIN routes r ON s.route_id = r.id
             LEFT JOIN checkins c ON s.id = c.spot_id AND c.user_id = ?
@@ -885,9 +885,35 @@ def route_detail(route_id):
 
 @app.route('/spot/<int:spot_id>/checkin', methods=['POST'])
 def checkin_spot(spot_id):
-    """打卡景點"""
-    user_id = request.json.get('user_id', 'default')
-    note = request.json.get('note', '')
+    """打卡景點（支援照片上傳）"""
+    # 支援 JSON 或 FormData
+    if request.is_json:
+        user_id = request.json.get('user_id', 'default')
+        note = request.json.get('note', '')
+        photo_url = None
+    else:
+        user_id = request.form.get('user_id', 'default')
+        note = request.form.get('note', '')
+        photo_url = None
+        
+        # 處理照片上傳
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo and photo.filename:
+                # 儲存照片到 static/uploads
+                import os
+                import uuid
+                
+                upload_dir = os.path.join(app.static_folder or 'static', 'uploads')
+                os.makedirs(upload_dir, exist_ok=True)
+                
+                # 生成唯一檔名
+                ext = photo.filename.rsplit('.', 1)[-1].lower() if '.' in photo.filename else 'jpg'
+                filename = f"{user_id}_{spot_id}_{uuid.uuid4().hex[:8]}.{ext}"
+                filepath = os.path.join(upload_dir, filename)
+                
+                photo.save(filepath)
+                photo_url = f"/static/uploads/{filename}"
     
     with get_db() as conn:
         # 檢查是否已打卡
@@ -904,9 +930,9 @@ def checkin_spot(spot_id):
         
         # 新增打卡
         conn.execute('''
-            INSERT INTO checkins (user_id, spot_id, route_id, checkin_date, note)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (user_id, spot_id, spot['route_id'], datetime.now().strftime('%Y-%m-%d'), note))
+            INSERT INTO checkins (user_id, spot_id, route_id, checkin_date, note, photo_url)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (user_id, spot_id, spot['route_id'], datetime.now().strftime('%Y-%m-%d'), note, photo_url))
         
         conn.commit()
     
@@ -918,6 +944,41 @@ def checkin_spot(spot_id):
         'message': f"成功打卡「{spot['name']}」！",
         'unlocked': [{'name': a['name'], 'icon': a['icon']} for a in unlocked]
     })
+
+
+@app.route('/spot/<int:spot_id>/checkin/cancel', methods=['POST'])
+def cancel_checkin(spot_id):
+    """取消打卡"""
+    user_id = request.json.get('user_id', 'default')
+    
+    with get_db() as conn:
+        # 檢查打卡是否存在
+        checkin = conn.execute(
+            "SELECT id, photo_url FROM checkins WHERE user_id = ? AND spot_id = ?",
+            (user_id, spot_id)
+        ).fetchone()
+        
+        if not checkin:
+            return jsonify({'success': False, 'message': '找不到打卡記錄'})
+        
+        # 刪除照片檔案（如果有）
+        if checkin['photo_url']:
+            import os
+            photo_path = os.path.join(app.static_folder or 'static', checkin['photo_url'].lstrip('/static/'))
+            if os.path.exists(photo_path):
+                try:
+                    os.remove(photo_path)
+                except:
+                    pass
+        
+        # 刪除打卡記錄
+        conn.execute(
+            "DELETE FROM checkins WHERE user_id = ? AND spot_id = ?",
+            (user_id, spot_id)
+        )
+        conn.commit()
+    
+    return jsonify({'success': True, 'message': '已取消打卡'})
 
 @app.route('/logs')
 def travel_logs():

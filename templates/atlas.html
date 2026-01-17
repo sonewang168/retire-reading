@@ -473,6 +473,162 @@
                 grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
         }
+        
+        /* 升級版打卡彈窗樣式 */
+        .checkin-modal {
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .photo-upload-area {
+            margin: 1rem 0;
+        }
+        
+        .photo-preview {
+            width: 100%;
+            height: 180px;
+            border: 2px dashed rgba(0, 212, 170, 0.3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+            background: rgba(0, 212, 170, 0.05);
+            transition: all 0.3s;
+        }
+        
+        .photo-preview:hover {
+            border-color: #00d4aa;
+            background: rgba(0, 212, 170, 0.1);
+        }
+        
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .photo-remove {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 100, 100, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .upload-hint {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: #7a8a7e;
+        }
+        
+        .upload-hint .camera-icon {
+            font-size: 2.5rem;
+        }
+        
+        .upload-hint .optional {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .note-area textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #e8efe9;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: none;
+        }
+        
+        .note-area textarea:focus {
+            outline: none;
+            border-color: #00d4aa;
+        }
+        
+        .note-area textarea::placeholder {
+            color: #5a6a5e;
+        }
+        
+        .btn-icon {
+            margin-right: 0.3rem;
+        }
+        
+        /* 已打卡詳情彈窗 */
+        .detail-modal {
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .detail-modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .detail-modal .close-btn {
+            background: none;
+            border: none;
+            color: #7a8a7e;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .detail-photo {
+            width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .detail-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .detail-info {
+            margin-bottom: 1rem;
+        }
+        
+        .detail-date {
+            color: #7a8a7e;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .detail-note {
+            color: #a8c4aa;
+            line-height: 1.6;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -553,7 +709,10 @@
                 <div class="spot-card {{ 'collected' if spot.collected else '' }}" 
                      data-id="{{ spot.id }}" 
                      data-name="{{ spot.name }}"
-                     data-collected="{{ spot.collected }}">
+                     data-collected="{{ spot.collected }}"
+                     data-date="{{ spot.checkin_date or '' }}"
+                     data-note="{{ spot.checkin_note or '' }}"
+                     data-photo="{{ spot.photo_url or '' }}">
                     <div class="spot-icon">{{ spot.icon }}</div>
                     <div class="spot-name">{{ spot.name }}</div>
                     <div class="spot-type">{{ spot.spot_type }}</div>
@@ -572,13 +731,55 @@
     
     <!-- 打卡彈窗 -->
     <div class="modal-overlay" id="checkin-modal">
-        <div class="modal">
+        <div class="modal checkin-modal">
             <div class="modal-icon" id="modal-icon">📍</div>
             <h3 id="modal-title">打卡景點</h3>
-            <p id="modal-desc">確定要在此景點打卡嗎？</p>
+            
+            <!-- 照片上傳區 -->
+            <div class="photo-upload-area">
+                <input type="file" id="photo-input" accept="image/*" capture="environment" style="display: none;">
+                <div class="photo-preview" id="photo-preview" onclick="document.getElementById('photo-input').click()">
+                    <div class="upload-hint">
+                        <span class="camera-icon">📷</span>
+                        <span>點擊拍照或上傳照片</span>
+                        <span class="optional">（選填）</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 心得輸入 -->
+            <div class="note-area">
+                <textarea id="checkin-note" placeholder="寫下你的旅遊心得...（選填）" rows="3"></textarea>
+            </div>
+            
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeModal()">取消</button>
-                <button class="btn btn-primary" onclick="confirmCheckin()">確認打卡</button>
+                <button class="btn btn-primary" onclick="confirmCheckin()">
+                    <span class="btn-icon">✓</span> 確認打卡
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 已打卡景點詳情彈窗 -->
+    <div class="modal-overlay" id="detail-modal">
+        <div class="modal detail-modal">
+            <div class="modal-header">
+                <h3 id="detail-title">景點名稱</h3>
+                <button class="close-btn" onclick="closeDetailModal()">✕</button>
+            </div>
+            <div class="detail-content">
+                <div class="detail-photo" id="detail-photo"></div>
+                <div class="detail-info">
+                    <p class="detail-date" id="detail-date"></p>
+                    <p class="detail-note" id="detail-note"></p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" onclick="cancelCheckin()">
+                    <span class="btn-icon">🗑️</span> 取消打卡
+                </button>
+                <button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>
             </div>
         </div>
     </div>
@@ -595,27 +796,108 @@
     <script>
         const userId = '{{ user_id }}';
         let currentSpotId = null;
+        let currentSpotName = null;
+        let selectedPhoto = null;
         
+        // 未打卡景點 - 開啟打卡彈窗
         document.querySelectorAll('.spot-card:not(.collected)').forEach(card => {
             card.addEventListener('click', () => {
                 currentSpotId = card.dataset.id;
-                document.getElementById('modal-title').textContent = card.dataset.name;
+                currentSpotName = card.dataset.name;
+                document.getElementById('modal-title').textContent = currentSpotName;
                 document.getElementById('checkin-modal').classList.add('active');
+                // 重置表單
+                document.getElementById('checkin-note').value = '';
+                document.getElementById('photo-preview').innerHTML = `
+                    <div class="upload-hint">
+                        <span class="camera-icon">📷</span>
+                        <span>點擊拍照或上傳照片</span>
+                        <span class="optional">（選填）</span>
+                    </div>
+                `;
+                selectedPhoto = null;
             });
         });
+        
+        // 已打卡景點 - 開啟詳情彈窗
+        document.querySelectorAll('.spot-card.collected').forEach(card => {
+            card.addEventListener('click', () => {
+                currentSpotId = card.dataset.id;
+                currentSpotName = card.dataset.name;
+                const date = card.dataset.date || '';
+                const note = card.dataset.note || '（無心得）';
+                const photo = card.dataset.photo || '';
+                
+                document.getElementById('detail-title').textContent = currentSpotName;
+                document.getElementById('detail-date').textContent = '📅 打卡日期：' + (date || '未知');
+                document.getElementById('detail-note').textContent = note || '（無心得）';
+                
+                const photoDiv = document.getElementById('detail-photo');
+                if (photo) {
+                    photoDiv.innerHTML = `<img src="${photo}" alt="打卡照片">`;
+                    photoDiv.style.display = 'block';
+                } else {
+                    photoDiv.style.display = 'none';
+                }
+                
+                document.getElementById('detail-modal').classList.add('active');
+            });
+        });
+        
+        // 照片上傳預覽
+        document.getElementById('photo-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedPhoto = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('photo-preview').innerHTML = `
+                        <img src="${e.target.result}" alt="預覽">
+                        <div class="photo-remove" onclick="removePhoto(event)">✕</div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        function removePhoto(e) {
+            e.stopPropagation();
+            selectedPhoto = null;
+            document.getElementById('photo-input').value = '';
+            document.getElementById('photo-preview').innerHTML = `
+                <div class="upload-hint">
+                    <span class="camera-icon">📷</span>
+                    <span>點擊拍照或上傳照片</span>
+                    <span class="optional">（選填）</span>
+                </div>
+            `;
+        }
         
         function closeModal() {
             document.getElementById('checkin-modal').classList.remove('active');
         }
         
+        function closeDetailModal() {
+            document.getElementById('detail-modal').classList.remove('active');
+        }
+        
         async function confirmCheckin() {
             if (!currentSpotId) return;
             
+            const note = document.getElementById('checkin-note').value.trim();
+            
             try {
+                // 使用 FormData 支援照片上傳
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('note', note);
+                if (selectedPhoto) {
+                    formData.append('photo', selectedPhoto);
+                }
+                
                 const res = await fetch(`/spot/${currentSpotId}/checkin`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId })
+                    body: formData
                 });
                 
                 const data = await res.json();
@@ -642,9 +924,40 @@
             }
         }
         
+        async function cancelCheckin() {
+            if (!currentSpotId) return;
+            
+            if (!confirm(`確定要取消「${currentSpotName}」的打卡嗎？\n照片和心得都會被刪除！`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/spot/${currentSpotId}/checkin/cancel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    closeDetailModal();
+                    alert('已取消打卡');
+                    location.reload();
+                } else {
+                    alert(data.message || '取消失敗');
+                }
+            } catch (e) {
+                alert('發生錯誤，請稍後再試');
+            }
+        }
+        
         // 點擊外部關閉
         document.getElementById('checkin-modal').addEventListener('click', e => {
             if (e.target.classList.contains('modal-overlay')) closeModal();
+        });
+        document.getElementById('detail-modal').addEventListener('click', e => {
+            if (e.target.classList.contains('modal-overlay')) closeDetailModal();
         });
     </script>
 </body>
