@@ -738,6 +738,150 @@
         .result-details .warning {
             color: #ffd93d;
         }
+        
+        /* 搜尋和篩選樣式 */
+        .search-filter-bar {
+            max-width: 800px;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(20, 30, 25, 0.8);
+            border: 2px solid rgba(0, 212, 170, 0.3);
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
+        }
+        
+        .search-icon {
+            font-size: 1.2rem;
+            margin-right: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .search-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .search-box input::placeholder {
+            color: rgba(232, 239, 233, 0.5);
+        }
+        
+        .clear-btn {
+            background: rgba(255, 107, 107, 0.2);
+            border: none;
+            color: #ff6b6b;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            background: rgba(20, 30, 25, 0.8);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-color: transparent;
+            color: #0a0f0d;
+            font-weight: 500;
+        }
+        
+        .search-result-hint {
+            text-align: center;
+            padding: 0.8rem;
+            background: rgba(0, 212, 170, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .hint-clear {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .hint-clear:hover {
+            background: var(--accent);
+            color: #0a0f0d;
+        }
+        
+        /* 隱藏的元素 */
+        .route-group.hidden,
+        .spot-card.hidden {
+            display: none !important;
+        }
+        
+        /* 無結果提示 */
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .no-results .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 600px) {
+            .search-filter-bar {
+                padding: 0 1rem;
+            }
+            
+            .filter-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -764,6 +908,26 @@
         <div class="page-header">
             <h1 class="page-title">🗺️ 探險圖鑑</h1>
             <p class="page-subtitle">收集每一個走過的景點，完成你的台灣探險地圖</p>
+        </div>
+        
+        <!-- 搜尋和篩選區 -->
+        <div class="search-filter-bar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" placeholder="搜尋景點名稱..." autocomplete="off">
+                <button class="clear-btn" id="clear-search" style="display:none;">✕</button>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="collected">已收集</button>
+                <button class="filter-btn" data-filter="uncollected">未收集</button>
+            </div>
+        </div>
+        
+        <!-- 搜尋結果提示 -->
+        <div class="search-result-hint" id="search-hint" style="display:none;">
+            <span id="search-count">0</span> 個結果
+            <button class="hint-clear" onclick="clearSearch()">清除搜尋</button>
         </div>
         
         <div class="total-progress">
@@ -927,6 +1091,92 @@
         let currentSpotId = null;
         let currentSpotName = null;
         let selectedPhoto = null;
+        let currentFilter = 'all';
+        
+        // ========== 搜尋和篩選功能 ==========
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('clear-search');
+        const searchHint = document.getElementById('search-hint');
+        const searchCount = document.getElementById('search-count');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const allSpots = document.querySelectorAll('.spot-card');
+        const allRouteGroups = document.querySelectorAll('.route-group');
+        
+        // 搜尋輸入
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            clearBtn.style.display = query ? 'flex' : 'none';
+            filterSpots();
+        });
+        
+        // 清除搜尋
+        clearBtn.addEventListener('click', clearSearch);
+        
+        function clearSearch() {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            filterSpots();
+        }
+        
+        // 篩選按鈕
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                filterSpots();
+            });
+        });
+        
+        // 執行篩選
+        function filterSpots() {
+            const query = searchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
+            
+            allSpots.forEach(spot => {
+                const name = spot.dataset.name.toLowerCase();
+                const isCollected = spot.classList.contains('collected');
+                
+                // 搜尋匹配
+                const matchesSearch = !query || name.includes(query);
+                
+                // 篩選匹配
+                let matchesFilter = true;
+                if (currentFilter === 'collected') {
+                    matchesFilter = isCollected;
+                } else if (currentFilter === 'uncollected') {
+                    matchesFilter = !isCollected;
+                }
+                
+                // 顯示或隱藏
+                if (matchesSearch && matchesFilter) {
+                    spot.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    spot.classList.add('hidden');
+                }
+            });
+            
+            // 更新路線群組顯示
+            allRouteGroups.forEach(group => {
+                const visibleSpots = group.querySelectorAll('.spot-card:not(.hidden)');
+                if (visibleSpots.length === 0) {
+                    group.classList.add('hidden');
+                } else {
+                    group.classList.remove('hidden');
+                }
+            });
+            
+            // 顯示搜尋結果提示
+            if (query || currentFilter !== 'all') {
+                searchHint.style.display = 'flex';
+                searchCount.textContent = visibleCount;
+            } else {
+                searchHint.style.display = 'none';
+            }
+        }
+        
+        // ========== 打卡功能 ==========
         
         // 未打卡景點 - 開啟打卡彈窗
         document.querySelectorAll('.spot-card:not(.collected)').forEach(card => {
