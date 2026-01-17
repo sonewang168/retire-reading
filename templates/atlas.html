@@ -731,13 +731,13 @@
     
     <!-- 打卡彈窗 -->
     <div class="modal-overlay" id="checkin-modal">
-        <div class="modal checkin-modal">
+        <div class="modal">
             <div class="modal-icon" id="modal-icon">📍</div>
             <h3 id="modal-title">打卡景點</h3>
             
             <!-- 照片上傳區 -->
             <div class="photo-upload-area">
-                <input type="file" id="photo-input" accept="image/*" capture="environment" style="display: none;">
+                <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none;">
                 <div class="photo-preview" id="photo-preview" onclick="document.getElementById('photo-input').click()">
                     <div class="upload-hint">
                         <span class="camera-icon">📷</span>
@@ -753,33 +753,24 @@
             </div>
             
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
-                <button class="btn btn-primary" onclick="confirmCheckin()">
-                    <span class="btn-icon">✓</span> 確認打卡
-                </button>
+                <button type="button" class="btn btn-secondary" id="btn-cancel">取消</button>
+                <button type="button" class="btn btn-primary" id="btn-confirm">✓ 確認打卡</button>
             </div>
         </div>
     </div>
     
     <!-- 已打卡景點詳情彈窗 -->
     <div class="modal-overlay" id="detail-modal">
-        <div class="modal detail-modal">
-            <div class="modal-header">
-                <h3 id="detail-title">景點名稱</h3>
-                <button class="close-btn" onclick="closeDetailModal()">✕</button>
-            </div>
+        <div class="modal">
+            <h3 id="detail-title">景點名稱</h3>
             <div class="detail-content">
                 <div class="detail-photo" id="detail-photo"></div>
-                <div class="detail-info">
-                    <p class="detail-date" id="detail-date"></p>
-                    <p class="detail-note" id="detail-note"></p>
-                </div>
+                <p class="detail-date" id="detail-date"></p>
+                <p class="detail-note" id="detail-note"></p>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-danger" onclick="cancelCheckin()">
-                    <span class="btn-icon">🗑️</span> 取消打卡
-                </button>
-                <button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>
+                <button type="button" class="btn btn-danger" id="btn-cancel-checkin">🗑️ 取消打卡</button>
+                <button type="button" class="btn btn-secondary" id="btn-close-detail">關閉</button>
             </div>
         </div>
     </div>
@@ -959,6 +950,12 @@
         document.getElementById('detail-modal').addEventListener('click', e => {
             if (e.target.classList.contains('modal-overlay')) closeDetailModal();
         });
+        
+        // 綁定按鈕事件
+        document.getElementById('btn-cancel').addEventListener('click', closeModal);
+        document.getElementById('btn-confirm').addEventListener('click', confirmCheckin);
+        document.getElementById('btn-cancel-checkin').addEventListener('click', cancelCheckin);
+        document.getElementById('btn-close-detail').addEventListener('click', closeDetailModal);
     </script>
 </body>
 </html>
