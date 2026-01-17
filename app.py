@@ -25,12 +25,15 @@ app = Flask(__name__, static_folder='static', static_url_path='/static')
 # Session 密鑰（用於 Google OAuth）
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'retire-reading-secret-key-2025')
 
-# 註冊 Google Blueprint
+# 註冊 Google Blueprint（可選功能）
+GOOGLE_ENABLED = False
 try:
     from google_routes import google_bp
     app.register_blueprint(google_bp)
-except ImportError:
-    print("⚠️ Google 整合模組未載入")
+    GOOGLE_ENABLED = True
+    print("✅ Google 整合模組已載入")
+except Exception as e:
+    print(f"⚠️ Google 整合模組未載入: {e}")
 
 # LINE Bot 設定
 LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET', '')

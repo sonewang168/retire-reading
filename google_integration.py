@@ -8,7 +8,7 @@ import os
 import json
 import requests
 from datetime import datetime
-from flask import session, url_for
+from urllib.parse import quote
 
 # Google OAuth 設定
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
@@ -36,7 +36,7 @@ def get_auth_url():
         'access_type': 'offline',
         'prompt': 'consent'
     }
-    query = '&'.join([f'{k}={requests.utils.quote(str(v))}' for k, v in params.items()])
+    query = '&'.join([f'{k}={quote(str(v))}' for k, v in params.items()])
     return f'https://accounts.google.com/o/oauth2/v2/auth?{query}'
 
 
