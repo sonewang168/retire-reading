@@ -1169,6 +1169,36 @@ def api_user_achievements(user_id):
 
 # ============ LINE Bot ============
 
+def safe_reply(line_bot_api, reply_token, user_id, messages):
+    """
+    安全回覆函數：先嘗試 reply，失敗則降級為 push
+    Reply token 有效期約 30 秒且只能使用一次
+    """
+    try:
+        line_bot_api.reply_message(
+            ReplyMessageRequest(
+                reply_token=reply_token,
+                messages=messages
+            )
+        )
+    except Exception as e:
+        error_msg = str(e)
+        if 'Invalid reply token' in error_msg or '400' in error_msg:
+            # Reply token 過期或已使用，改用 push_message
+            app.logger.warning(f"Reply token 失效，改用 push_message: {error_msg}")
+            try:
+                line_bot_api.push_message(
+                    PushMessageRequest(
+                        to=user_id,
+                        messages=messages
+                    )
+                )
+            except Exception as push_error:
+                app.logger.error(f"Push message 也失敗: {push_error}")
+        else:
+            app.logger.error(f"Reply 發生未預期錯誤: {e}")
+            raise
+
 @app.route('/callback', methods=['POST'])
 def callback():
     if not handler:
@@ -1194,51 +1224,39 @@ if handler:
             
             if text in ['選單', '功能', 'menu', '?', '？']:
                 reply = create_menu_flex()
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[FlexMessage(alt_text='功能選單', contents=FlexContainer.from_dict(reply))]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [FlexMessage(alt_text='功能選單', contents=FlexContainer.from_dict(reply))]
                 )
             elif text in ['願望', '清單', '想去']:
                 reply = get_wishes_flex(user_id)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[FlexMessage(alt_text='願望清單', contents=FlexContainer.from_dict(reply))]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [FlexMessage(alt_text='願望清單', contents=FlexContainer.from_dict(reply))]
                 )
             elif text in ['路線', '走讀', '推薦']:
                 reply = get_routes_flex()
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[FlexMessage(alt_text='推薦路線', contents=FlexContainer.from_dict(reply))]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [FlexMessage(alt_text='推薦路線', contents=FlexContainer.from_dict(reply))]
                 )
             elif text in ['圖鑑', '收集', '打卡']:
                 reply = get_atlas_flex(user_id)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[FlexMessage(alt_text='探險圖鑑', contents=FlexContainer.from_dict(reply))]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [FlexMessage(alt_text='探險圖鑑', contents=FlexContainer.from_dict(reply))]
                 )
             elif text in ['成就', '徽章', '獎章']:
                 reply = get_achievements_flex(user_id)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[FlexMessage(alt_text='成就徽章', contents=FlexContainer.from_dict(reply))]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [FlexMessage(alt_text='成就徽章', contents=FlexContainer.from_dict(reply))]
                 )
             elif text in ['統計', '進度', '紀錄']:
                 reply = get_stats_message(user_id)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[TextMessage(text=reply)]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [TextMessage(text=reply)]
                 )
             elif text.startswith('新增 ') or text.startswith('加入 '):
                 place_name = text.split(' ', 1)[1] if ' ' in text else ''
@@ -1247,36 +1265,28 @@ if handler:
                     reply = f'✨ 已將「{place_name}」加入願望清單！'
                 else:
                     reply = '請輸入地點名稱，例如：新增 阿里山'
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[TextMessage(text=reply)]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [TextMessage(text=reply)]
                 )
             elif text.startswith('完成 '):
                 place_name = text.split(' ', 1)[1] if ' ' in text else ''
                 result = mark_wish_complete_line(place_name, user_id)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[TextMessage(text=result)]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [TextMessage(text=result)]
                 )
             elif text in ['北部', '中部', '南部', '東部']:
                 reply = get_region_routes_flex(text)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[FlexMessage(alt_text=f'{text}路線', contents=FlexContainer.from_dict(reply))]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [FlexMessage(alt_text=f'{text}路線', contents=FlexContainer.from_dict(reply))]
                 )
             else:
                 reply = search_content(text, user_id)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[TextMessage(text=reply)]
-                    )
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [TextMessage(text=reply)]
                 )
 
 def create_menu_flex():
