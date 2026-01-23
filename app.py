@@ -6,7 +6,7 @@ Railway + LINE Bot 版本
 
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from flask import Flask, request, abort, render_template, jsonify, redirect, url_for, session
 from linebot.v3 import WebhookHandler
 from linebot.v3.messaging import (
@@ -19,6 +19,21 @@ from linebot.v3.webhooks import MessageEvent, TextMessageContent, LocationMessag
 from linebot.v3.exceptions import InvalidSignatureError
 import sqlite3
 from contextlib import contextmanager
+
+# 台灣時區 (UTC+8)
+TW_TIMEZONE = timezone(timedelta(hours=8))
+
+def get_tw_time():
+    """取得台灣時間"""
+    return datetime.now(TW_TIMEZONE)
+
+def get_tw_date_str():
+    """取得台灣日期字串 (YYYY-MM-DD)"""
+    return get_tw_time().strftime('%Y-%m-%d')
+
+def get_tw_datetime_str():
+    """取得台灣日期時間字串 (YYYY-MM-DD HH:MM:SS)"""
+    return get_tw_time().strftime('%Y-%m-%d %H:%M:%S')
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 
@@ -645,7 +660,7 @@ def index():
         achievement_count = conn.execute("SELECT COUNT(*) FROM user_achievements WHERE user_id = ?", (user_id,)).fetchone()[0]
         
         # 本季推薦
-        month = datetime.now().month
+        month = get_tw_time().month
         season = '春' if month in [3,4,5] else '夏' if month in [6,7,8] else '秋' if month in [9,10,11] else '冬'
         
         seasonal_routes = conn.execute('''
@@ -869,7 +884,7 @@ def complete_wish(wish_id):
     with get_db() as conn:
         conn.execute('''
             UPDATE wishes SET completed = 1, completed_date = ? WHERE id = ? AND user_id = ?
-        ''', (datetime.now().strftime('%Y-%m-%d'), wish_id, user_id))
+        ''', (get_tw_date_str(), wish_id, user_id))
         conn.commit()
     
     # 檢查成就
@@ -1012,7 +1027,7 @@ def checkin_spot(spot_id):
             conn.execute('''
                 INSERT INTO checkins (user_id, spot_id, route_id, checkin_date, note, photo_url)
                 VALUES (?, ?, ?, ?, ?, ?)
-            ''', (user_id, spot_id, spot['route_id'], datetime.now().strftime('%Y-%m-%d'), note, photo_url))
+            ''', (user_id, spot_id, spot['route_id'], get_tw_date_str(), note, photo_url))
             
             conn.commit()
         
@@ -1452,7 +1467,7 @@ def get_wishes_flex(user_id):
             "body": {"type": "box", "layout": "vertical", "contents": contents}}
 
 def get_routes_flex():
-    month = datetime.now().month
+    month = get_tw_time().month
     season = '春' if month in [3,4,5] else '夏' if month in [6,7,8] else '秋' if month in [9,10,11] else '冬'
     
     with get_db() as conn:
@@ -1600,7 +1615,7 @@ def mark_wish_complete_line(place_name, user_id):
         cursor = conn.execute('''
             UPDATE wishes SET completed = 1, completed_date = ?
             WHERE name LIKE ? AND completed = 0 AND user_id = ?
-        ''', (datetime.now().strftime('%Y-%m-%d'), f'%{place_name}%', user_id))
+        ''', (get_tw_date_str(), f'%{place_name}%', user_id))
         conn.commit()
         
         if cursor.rowcount > 0:
