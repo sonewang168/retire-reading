@@ -1282,6 +1282,13 @@ if handler:
                     line_bot_api, event.reply_token, user_id,
                     [FlexMessage(alt_text=f'{text}路線', contents=FlexContainer.from_dict(reply))]
                 )
+            elif text in ['網頁', '開啟', '打卡', '上傳']:
+                base_url = os.environ.get('BASE_URL', 'https://retire-reading-643a9.up.railway.app')
+                reply = create_web_links_flex(base_url, user_id)
+                safe_reply(
+                    line_bot_api, event.reply_token, user_id,
+                    [FlexMessage(alt_text='網頁功能', contents=FlexContainer.from_dict(reply))]
+                )
             else:
                 reply = search_content(text, user_id)
                 safe_reply(
@@ -1314,7 +1321,88 @@ def create_menu_flex():
                 {"type": "separator", "margin": "lg"},
                 {"type": "text", "text": "➕「新增 地點」加入願望", "margin": "md", "size": "sm"},
                 {"type": "text", "text": "✅「完成 地點」標記完成", "margin": "sm", "size": "sm"},
-                {"type": "text", "text": "🧭「北部/中部/南部/東部」", "margin": "sm", "size": "sm"}
+                {"type": "text", "text": "🧭「北部/中部/南部/東部」", "margin": "sm", "size": "sm"},
+                {"type": "text", "text": "🌐「網頁」開啟打卡上傳", "margin": "sm", "size": "sm"}
+            ]
+        }
+    }
+
+def create_web_links_flex(base_url, user_id):
+    """建立網頁功能連結的 Flex Message"""
+    return {
+        "type": "bubble",
+        "hero": {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [
+                {"type": "text", "text": "🌐", "size": "3xl", "align": "center"},
+                {"type": "text", "text": "網頁功能", "weight": "bold", "size": "xl", "color": "#1a5f2a", "align": "center", "margin": "sm"}
+            ],
+            "paddingAll": "15px",
+            "backgroundColor": "#e8f5e9"
+        },
+        "body": {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [
+                {"type": "text", "text": "點擊下方按鈕開啟網頁", "size": "sm", "color": "#888888", "align": "center"},
+                {"type": "text", "text": "📷 可上傳照片、同步 Google", "size": "xs", "color": "#aaaaaa", "align": "center", "margin": "sm"}
+            ],
+            "paddingAll": "10px"
+        },
+        "footer": {
+            "type": "box",
+            "layout": "vertical",
+            "spacing": "sm",
+            "contents": [
+                {
+                    "type": "button",
+                    "style": "primary",
+                    "color": "#1a5f2a",
+                    "action": {
+                        "type": "uri",
+                        "label": "🗺️ 探險圖鑑（打卡）",
+                        "uri": f"{base_url}/atlas?user={user_id}"
+                    }
+                },
+                {
+                    "type": "button",
+                    "style": "primary",
+                    "color": "#2e7d32",
+                    "action": {
+                        "type": "uri",
+                        "label": "🚶 瀏覽路線",
+                        "uri": f"{base_url}/routes?user={user_id}"
+                    }
+                },
+                {
+                    "type": "button",
+                    "style": "primary",
+                    "color": "#388e3c",
+                    "action": {
+                        "type": "uri",
+                        "label": "📋 願望清單",
+                        "uri": f"{base_url}/wishes?user={user_id}"
+                    }
+                },
+                {
+                    "type": "button",
+                    "style": "secondary",
+                    "action": {
+                        "type": "uri",
+                        "label": "⚙️ Google 連動設定",
+                        "uri": f"{base_url}/google-settings?user={user_id}"
+                    }
+                },
+                {
+                    "type": "button",
+                    "style": "secondary",
+                    "action": {
+                        "type": "uri",
+                        "label": "🏠 首頁總覽",
+                        "uri": f"{base_url}/?user={user_id}"
+                    }
+                }
             ]
         }
     }
