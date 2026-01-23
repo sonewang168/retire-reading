@@ -1335,13 +1335,16 @@ def get_wishes_flex(user_id):
     contents = []
     for w in wishes:
         emoji = ['🔴', '🟠', '🟡', '🟢', '⚪'][min(w['priority']-1, 4)]
+        row_contents = [
+            {"type": "text", "text": emoji, "flex": 0},
+            {"type": "text", "text": w['name'], "flex": 3, "margin": "sm"}
+        ]
+        # 只有在有季節資料時才加入
+        if w['best_season']:
+            row_contents.append({"type": "text", "text": w['best_season'], "flex": 1, "size": "xs", "color": "#888888"})
         contents.append({
             "type": "box", "layout": "horizontal", "margin": "md",
-            "contents": [
-                {"type": "text", "text": emoji, "flex": 0},
-                {"type": "text", "text": w['name'], "flex": 3, "margin": "sm"},
-                {"type": "text", "text": w['best_season'] or '', "flex": 1, "size": "xs", "color": "#888888"}
-            ]
+            "contents": row_contents
         })
     
     return {"type": "bubble",
@@ -1471,13 +1474,16 @@ def get_region_routes_flex(region):
     
     contents = []
     for r in routes:
+        box_contents = [
+            {"type": "text", "text": f"{r['cover_emoji']} {r['name']}", "weight": "bold"},
+            {"type": "text", "text": f"{r['distance_km']}km | {r['duration_hours']}h | {r['difficulty']}", "size": "xs", "color": "#888888"}
+        ]
+        # 只有在有 highlights 資料時才加入
+        if r['highlights']:
+            box_contents.append({"type": "text", "text": r['highlights'], "size": "xs", "color": "#666666", "wrap": True})
         contents.append({
             "type": "box", "layout": "vertical", "margin": "lg",
-            "contents": [
-                {"type": "text", "text": f"{r['cover_emoji']} {r['name']}", "weight": "bold"},
-                {"type": "text", "text": f"{r['distance_km']}km | {r['duration_hours']}h | {r['difficulty']}", "size": "xs", "color": "#888888"},
-                {"type": "text", "text": r['highlights'] or '', "size": "xs", "color": "#666666", "wrap": True}
-            ]
+            "contents": box_contents
         })
     
     return {"type": "bubble",
