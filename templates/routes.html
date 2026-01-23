@@ -438,5 +438,21 @@
             {% endfor %}
         </div>
     </main>
+    
+    <script>
+        // ===== LINE 帳號自動識別 =====
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlUserId = urlParams.get('user');
+            const storedUserId = localStorage.getItem('retire_reading_user_id');
+            
+            if (urlUserId && urlUserId !== 'default') {
+                localStorage.setItem('retire_reading_user_id', urlUserId);
+            } else if (!urlUserId && storedUserId && storedUserId !== 'default') {
+                urlParams.set('user', storedUserId);
+                window.location.search = urlParams.toString();
+            }
+        })();
+    </script>
 </body>
 </html>

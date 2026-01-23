@@ -1087,6 +1087,23 @@
     </div>
     
     <script>
+        // ===== LINE 帳號自動識別 =====
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlUserId = urlParams.get('user');
+            const storedUserId = localStorage.getItem('retire_reading_user_id');
+            
+            // 如果 URL 有 user 參數，存到 localStorage
+            if (urlUserId && urlUserId !== 'default') {
+                localStorage.setItem('retire_reading_user_id', urlUserId);
+            }
+            // 如果 URL 沒有 user 參數，但 localStorage 有，就重定向
+            else if (!urlUserId && storedUserId && storedUserId !== 'default') {
+                urlParams.set('user', storedUserId);
+                window.location.search = urlParams.toString();
+            }
+        })();
+        
         const userId = '{{ user_id }}';
         let currentSpotId = null;
         let currentSpotName = null;

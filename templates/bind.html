@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a5f2a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>帳號綁定 | 退休走讀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0a0f0d 0%, #1a2f1f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .bind-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 40px 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .icon.success { animation: bounce 0.6s ease; }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        h1 {
+            color: #1a5f2a;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .message {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .user-id {
+            background: #f0f7f2;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+        }
+        
+        .user-id-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1a5f2a, #2d8a3e);
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(26, 95, 42, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .steps {
+            text-align: left;
+            background: #f8faf8;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .steps h3 {
+            color: #1a5f2a;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .step-num {
+            background: #1a5f2a;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .error-card {
+            background: #fff5f5;
+        }
+        
+        .error-card h1 {
+            color: #c53030;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .status-badge.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.not-connected {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    {% if success %}
+    <div class="bind-card">
+        <div class="icon success">✅</div>
+        <h1>綁定成功！</h1>
+        <span class="status-badge connected">LINE 帳號已連結</span>
+        
+        <p class="message">
+            你的 LINE 帳號已綁定到此瀏覽器。<br>
+            現在可以將網頁加入主畫面使用！
+        </p>
+        
+        <div class="user-id">
+            <div class="user-id-label">LINE User ID</div>
+            {{ user_id[:20] }}...
+        </div>
+        
+        <div class="steps">
+            <h3>📱 如何加入主畫面？</h3>
+            <div class="step">
+                <span class="step-num">1</span>
+                <span>點擊下方「開始使用」進入首頁</span>
+            </div>
+            <div class="step">
+                <span class="step-num">2</span>
+                <span>點擊 Safari 下方的 <strong>分享按鈕 ⬆️</strong></span>
+            </div>
+            <div class="step">
+                <span class="step-num">3</span>
+                <span>選擇「<strong>加入主畫面</strong>」</span>
+            </div>
+            <div class="step">
+                <span class="step-num">4</span>
+                <span>之後從主畫面開啟即可，資料會自動同步！</span>
+            </div>
+        </div>
+        
+        <a href="/?user={{ user_id }}" class="btn btn-primary">🚀 開始使用</a>
+    </div>
+    
+    <script>
+        // 將 user_id 存到 localStorage
+        const userId = '{{ user_id }}';
+        if (userId && userId !== 'default') {
+            localStorage.setItem('retire_reading_user_id', userId);
+            console.log('✅ LINE 帳號已綁定:', userId.substring(0, 20) + '...');
+        }
+    </script>
+    
+    {% else %}
+    <div class="bind-card error-card">
+        <div class="icon">❌</div>
+        <h1>綁定失敗</h1>
+        <span class="status-badge not-connected">尚未連結</span>
+        
+        <p class="message">
+            {{ message }}<br><br>
+            請從 LINE Bot 點擊「網頁」按鈕<br>
+            取得正確的綁定連結。
+        </p>
+        
+        <a href="/" class="btn btn-secondary">返回首頁</a>
+    </div>
+    {% endif %}
+</body>
+</html>

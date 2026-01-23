@@ -613,6 +613,19 @@ def get_user_stats(user_id):
 
 # ============ 網頁路由 ============
 
+@app.route('/bind')
+def bind_account():
+    """
+    LINE 帳號綁定頁面
+    從 LINE 點擊連結後，將 user_id 存到瀏覽器 localStorage
+    之後 PWA 就能自動讀取
+    """
+    user_id = request.args.get('user', '')
+    if not user_id or user_id == 'default':
+        return render_template('bind.html', success=False, message='缺少 LINE 帳號資訊')
+    
+    return render_template('bind.html', success=True, user_id=user_id)
+
 @app.route('/google-settings')
 def google_settings():
     """Google 連動設定頁面"""
@@ -1328,7 +1341,11 @@ def create_menu_flex():
     }
 
 def create_web_links_flex(base_url, user_id):
-    """建立網頁功能連結的 Flex Message"""
+    """建立網頁功能連結的 Flex Message（使用外部瀏覽器開啟）"""
+    # 加上 openExternalBrowser=1 讓 LINE 用外部瀏覽器開啟
+    def ext_url(path):
+        return f"{base_url}{path}?user={user_id}&openExternalBrowser=1"
+    
     return {
         "type": "bubble",
         "hero": {
@@ -1345,8 +1362,8 @@ def create_web_links_flex(base_url, user_id):
             "type": "box",
             "layout": "vertical",
             "contents": [
-                {"type": "text", "text": "點擊下方按鈕開啟網頁", "size": "sm", "color": "#888888", "align": "center"},
-                {"type": "text", "text": "📷 可上傳照片、同步 Google", "size": "xs", "color": "#aaaaaa", "align": "center", "margin": "sm"}
+                {"type": "text", "text": "首次使用請先「綁定帳號」", "size": "sm", "color": "#c62828", "align": "center", "weight": "bold"},
+                {"type": "text", "text": "綁定後可加入主畫面使用", "size": "xs", "color": "#888888", "align": "center", "margin": "sm"}
             ],
             "paddingAll": "10px"
         },
@@ -1358,11 +1375,25 @@ def create_web_links_flex(base_url, user_id):
                 {
                     "type": "button",
                     "style": "primary",
+                    "color": "#c62828",
+                    "action": {
+                        "type": "uri",
+                        "label": "🔗 綁定 LINE 帳號（首次必做）",
+                        "uri": ext_url("/bind")
+                    }
+                },
+                {
+                    "type": "separator",
+                    "margin": "md"
+                },
+                {
+                    "type": "button",
+                    "style": "primary",
                     "color": "#1a5f2a",
                     "action": {
                         "type": "uri",
                         "label": "🗺️ 探險圖鑑（打卡）",
-                        "uri": f"{base_url}/atlas?user={user_id}"
+                        "uri": ext_url("/atlas")
                     }
                 },
                 {
@@ -1372,26 +1403,7 @@ def create_web_links_flex(base_url, user_id):
                     "action": {
                         "type": "uri",
                         "label": "🚶 瀏覽路線",
-                        "uri": f"{base_url}/routes?user={user_id}"
-                    }
-                },
-                {
-                    "type": "button",
-                    "style": "primary",
-                    "color": "#388e3c",
-                    "action": {
-                        "type": "uri",
-                        "label": "📋 願望清單",
-                        "uri": f"{base_url}/wishes?user={user_id}"
-                    }
-                },
-                {
-                    "type": "button",
-                    "style": "secondary",
-                    "action": {
-                        "type": "uri",
-                        "label": "⚙️ Google 連動設定",
-                        "uri": f"{base_url}/google-settings?user={user_id}"
+                        "uri": ext_url("/routes")
                     }
                 },
                 {
@@ -1400,7 +1412,7 @@ def create_web_links_flex(base_url, user_id):
                     "action": {
                         "type": "uri",
                         "label": "🏠 首頁總覽",
-                        "uri": f"{base_url}/?user={user_id}"
+                        "uri": ext_url("/")
                     }
                 }
             ]
